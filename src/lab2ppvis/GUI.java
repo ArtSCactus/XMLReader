@@ -40,30 +40,30 @@ import org.xml.sax.SAXException;
  * @author Asus
  */
 public class GUI {
-   public void addNewElement(Document document,/*,NodeList nodeList,*/ Node nodeName, String studentName, String hisGroup) throws TransformerException{
-           DataBase dataBase = new DataBase();
+   public void addNewElement(Document document, Node nodeName, String studentName, String hisGroup) throws TransformerException{
+      // DataBase dataBase = new DataBase();
        Element newStudent = document.createElement("student");
+    //   Element studentName = document
      //  dataBase.setCounter(1);
             nodeName.appendChild(newStudent);
-             NamedNodeMap attributes = nodeName.getAttributes();
+             NamedNodeMap attributes = newStudent.getAttributes();
              newStudent.setAttribute("aname", studentName);
                           newStudent.setAttribute("bgroup", hisGroup);
                           for (int i=0; i<10; i++)
-                              newStudent.setAttribute("sem"+Integer.toString(i),"0");
-                          //Запишем содержимое в xml файл
+                              newStudent.setAttribute("sem"+Integer.toString(i),UserDialog.comboList.get(i).getText());
+                          //Запись содержимого в xml файл
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource domSource = new DOMSource(document);
             StreamResult streamResult = new StreamResult(new File("data/iblog.xml"));
-            transformer.transform(domSource, streamResult);
-            
+            transformer.transform(domSource, streamResult);        
    }
 
 public static void printToTable(TableItem nameOfItem,int index, String information){
     nameOfItem.setText(index,information);
 }
 public void loadTableFromFile(boolean debugMode,String fileLocation,Table table){
-    DataBase dataBase = new DataBase();
+ DataBase dataBase = new DataBase();
  File fXml=new File(fileLocation);   
         try
         {
@@ -155,27 +155,7 @@ public void loadTableFromFile(boolean debugMode,String fileLocation,Table table)
         addItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                /*                try{
-                DataBase model = new DataBase();
-                
-                
-                DocumentBuilderFactory dbf=DocumentBuilderFactory.newInstance();
-                
-                //  File fXml=new File("data/book.xml");
-                DocumentBuilder  db = dbf.newDocumentBuilder();
-                Document doc=db.parse("data/iblog.xml");
-                Node students=doc.getElementsByTagName("students").item(0);
-                
-                try {
-                addNewElement(doc, students, "Вася пупкин", "11111");
-                } catch (TransformerException ex) {
-                Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                
-                }
-                //doc.getdocumentElement().appendChild();
-                catch(IOException | ParserConfigurationException | DOMException | SAXException ei){}
-                loadTableFromFile(true,"data/iblog.xml",table);*/
+               
                    UserDialog.addToTableDialog(MainMenu);
             }
         });

@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -41,7 +42,7 @@ import org.xml.sax.SAXException;
  * @author Asus
  */
 public class UserDialog {
-
+public static ArrayList<Combo> comboList = new ArrayList();
     public static int arrayListCounter = 0;
 
     public static void changeTableDialog(Shell shell) throws ParserConfigurationException{
@@ -82,12 +83,12 @@ public class UserDialog {
         dialog.open();
     }
 
-    public static void addToTableDialog(Shell shell) {
+    public static void addToTableDialog(Shell shell) { 
         DataBase model = new DataBase();
         ArrayList<Label> labelList = new ArrayList();
-        ArrayList<Combo> comboList = new ArrayList();
-        String[] numbers= new String[] {"0","1","2","3","4","5","6","7","8","9"};//TODO: не забудь потом проверить на конвертацию.
-        final Shell dialog = new Shell(shell, SWT.DIALOG_TRIM);
+        String[] numbers= new String[] {"0","1","2","3","4","5","6","7","8","9"};//TODO: не забудь потом проверить на конвертацию.     
+         Shell dialog = new Shell(shell, SWT.APPLICATION_MODAL
+        | SWT.DIALOG_TRIM | SWT.ON_TOP);
         dialog.setLayout(new GridLayout(2,false));
         Composite namePart = new Composite(dialog, SWT.NONE);
         Label labelName = new Label(namePart, SWT.NONE);
@@ -116,8 +117,7 @@ public class UserDialog {
                     }
         Composite UI = new Composite(dialog, SWT.BORDER);
         UI.setBounds(0, 150, 305, 30);
-        Text textToTable = new Text(UI, SWT.BORDER);
-        textToTable.setBounds(0, 150, 100, 20);//две колонки name и group с Text, остальное combobox. Потом это всё считать и в разослать по функциям на таблицу.
+        //две колонки name и group с Text, остальное combobox. Потом это всё считать и в разослать по функциям на таблицу.
         UI.setLayout(new RowLayout(SWT.HORIZONTAL));
         Button inputToTable = new Button(UI, SWT.NONE);
         inputToTable.setText("Add to table");
@@ -130,16 +130,15 @@ public class UserDialog {
                     DocumentBuilder  db = dbf.newDocumentBuilder();
                     Document doc=db.parse("data/iblog.xml");
                     NodeList nodeList = doc.getElementsByTagName("students");
-                  //  Node root = doc.getElementsByTagName("students");
-                    Node students=doc.getElementsByTagName("students").item(nodeList.getLength());
-                    gui.addNewElement(doc, students, studentName.getText(), studentGroup.getText());
+                    Node students=doc.getElementsByTagName("student").item(0);//nodeList.getLength());
+                    gui.addNewElement(doc,students, studentName.getText(), studentGroup.getText());
                    // gui.addNewElement(doc, students, studentName.getText(), studentGroup.getText());
                     for (int i=0; i<comboList.size(); i++){
                         NamedNodeMap namedNodeMap = students.getAttributes();
                         Node nodeAttr = namedNodeMap.getNamedItem("sem"+Integer.toString(i));
                        // int idx = comboList.get(i).getSelectionIndex();
-                        nodeAttr.setNodeValue(comboList.get(i).getText());//NullPointerException nodeAttr = null
-                    }//Не добавляет количество работ
+                        nodeAttr.setNodeValue(comboList.get(i).getText());
+                    }
           
                 TransformerFactory transformerFactory = TransformerFactory.newInstance();
                 Transformer transformer = transformerFactory.newTransformer();
@@ -156,5 +155,4 @@ public class UserDialog {
         dialog.pack();
         dialog.open();
     }
-
 }
