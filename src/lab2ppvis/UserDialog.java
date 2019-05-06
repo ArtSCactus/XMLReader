@@ -5,19 +5,12 @@
  */
 package lab2ppvis;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.eclipse.swt.SWT;
 import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
 import org.eclipse.swt.layout.GridData;
@@ -26,15 +19,9 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -42,7 +29,7 @@ import org.xml.sax.SAXException;
  * @author Asus
  */
 public class UserDialog {
-public static ArrayList<Combo> comboList = new ArrayList();
+
     public static int arrayListCounter = 0;
 
     public static void changeTableDialog(Shell shell) throws ParserConfigurationException{
@@ -84,8 +71,9 @@ public static ArrayList<Combo> comboList = new ArrayList();
     }
 
     public static void addToTableDialog(Shell shell) { 
-        DataBase model = new DataBase();
+        //DataBase model = new DataBase();
         ArrayList<Label> labelList = new ArrayList();
+        ArrayList<Combo> comboList = new ArrayList();
         String[] numbers= new String[] {"0","1","2","3","4","5","6","7","8","9"};//TODO: не забудь потом проверить на конвертацию.     
          Shell dialog = new Shell(shell, SWT.APPLICATION_MODAL
         | SWT.DIALOG_TRIM | SWT.ON_TOP);
@@ -122,36 +110,17 @@ public static ArrayList<Combo> comboList = new ArrayList();
         Button inputToTable = new Button(UI, SWT.NONE);
         inputToTable.setText("Add to table");
         inputToTable.addSelectionListener(widgetSelectedAdapter(event -> {
-            try {
                     GUI gui = new GUI();
                     WindowForm wf = new WindowForm();
                     if (studentName.getText().equals("")){ wf.Error(dialog,"Error 001","One of text fields are empty");return;}
-                    DocumentBuilderFactory dbf=DocumentBuilderFactory.newInstance();
-                    DocumentBuilder  db = dbf.newDocumentBuilder();
-                    Document doc=db.parse("data/iblog.xml");
-                    NodeList nodeList = doc.getElementsByTagName("students");
-                    Node students=doc.getElementsByTagName("student").item(0);//nodeList.getLength());
-                    gui.addNewElement(doc,students, studentName.getText(), studentGroup.getText());
-                   // gui.addNewElement(doc, students, studentName.getText(), studentGroup.getText());
-                    for (int i=0; i<comboList.size(); i++){
-                        NamedNodeMap namedNodeMap = students.getAttributes();
-                        Node nodeAttr = namedNodeMap.getNamedItem("sem"+Integer.toString(i));
-                       // int idx = comboList.get(i).getSelectionIndex();
-                        nodeAttr.setNodeValue(comboList.get(i).getText());
-                    }
-          
-                TransformerFactory transformerFactory = TransformerFactory.newInstance();
-                Transformer transformer = transformerFactory.newTransformer();
-                DOMSource domSource = new DOMSource(doc);
-                StreamResult streamResult = new StreamResult(new File("data/iblog.xml"));
-                transformer.transform(domSource, streamResult);
-            }
-            catch(IOException | ParserConfigurationException | DOMException | SAXException ei){} catch (TransformerException ex) {
+            try {
+                
+                gui.addNewElement(studentName.getText(), studentGroup.getText(), comboList);
+            } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
                 Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         ));
-        //dialog.setDefaultButton (ok);
         dialog.pack();
         dialog.open();
     }

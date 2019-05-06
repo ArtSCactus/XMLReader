@@ -22,6 +22,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
@@ -30,7 +31,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -40,23 +40,33 @@ import org.xml.sax.SAXException;
  * @author Asus
  */
 public class GUI {
-   public void addNewElement(Document document, Node nodeName, String studentName, String hisGroup) throws TransformerException{
-      // DataBase dataBase = new DataBase();
-       Element newStudent = document.createElement("student");
-    //   Element studentName = document
-     //  dataBase.setCounter(1);
-            nodeName.appendChild(newStudent);
-             NamedNodeMap attributes = newStudent.getAttributes();
-             newStudent.setAttribute("aname", studentName);
-                          newStudent.setAttribute("bgroup", hisGroup);
-                          for (int i=0; i<10; i++)
-                              newStudent.setAttribute("sem"+Integer.toString(i),UserDialog.comboList.get(i).getText());
-                          //Запись содержимого в xml файл
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+   public void addNewElement(String studentName, String studentGroup, ArrayList<Combo> comboList) throws TransformerException, IOException, SAXException, ParserConfigurationException{
+       DataBase db = new DataBase();    
+       int buffer = 0;
+       DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            Document document = documentBuilder.parse("data/iblog.xml");
+
+            Node root = document.getFirstChild();
+   
+           Element student = document.createElement("student");
+           root.appendChild(student);
+           student.setAttribute("name", studentName);
+           student.setAttribute("group", studentGroup);
+           
+           for (int i=0; i<10; i++){
+               Element sem = document.createElement("sem");
+            sem.appendChild(document.createTextNode(comboList.get(i).getText()));
+            sem.setAttribute("id", Integer.toString(i));
+             student.appendChild(sem);
+             buffer +=Integer.parseInt(comboList.get(i).getText());
+           }
+           db.addToAmountMassive(buffer);
+             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource domSource = new DOMSource(document);
             StreamResult streamResult = new StreamResult(new File("data/iblog.xml"));
-            transformer.transform(domSource, streamResult);        
+            transformer.transform(domSource, streamResult);
    }
 
 public static void printToTable(TableItem nameOfItem,int index, String information){
@@ -74,29 +84,39 @@ public void loadTableFromFile(boolean debugMode,String fileLocation,Table table)
             doc.getDocumentElement().normalize();
             if (debugMode==true)System.out.println("Root element ["+doc.getDocumentElement().getNodeName()+"]");
             
-            NodeList nodeLst=doc.getElementsByTagName("student");
-            if (debugMode==true)System.out.println("Students:");
+            Node root = doc.getFirstChild();
+            NodeList nodeList = doc.getElementsByTagName(doc.getDocumentElement().getChildNodes().item(1).getNodeName());
+            NodeList nodeLst=doc.getElementsByTagName("sem");
             table.removeAll();
-            for(int je=0;je<nodeLst.getLength();je++)
+              for(int tmp = 0; tmp < nodeList.getLength(); tmp++)
             {
+                ArrayList<String> studentData = new ArrayList();
+                Node student = doc.getElementsByTagName("student").item(tmp);
+                  TableItem item = new TableItem(table, SWT.BORDER);
+                printToTable(item, 0, Integer.toString(tmp));
+                printToTable(item,1,student.getAttributes().item(1).getNodeValue());
+                printToTable(item,2,student.getAttributes().item(0).getNodeValue());
+                studentData.add(student.getAttributes().item(0).getNodeValue());// group
+                studentData.add(student.getAttributes().item(1).getNodeValue());// name
+                System.out.println("student: "+tmp+" group: "+student.getAttributes().item(0).getNodeValue()+" name: "+student.getAttributes().item(1).getNodeValue());
+                Node node = nodeList.item(tmp);
                 int buffer=0;
-                Node fstNode=nodeLst.item(je);
-                if(fstNode.getNodeType()==Node.ELEMENT_NODE)
+                if(node.getNodeType() == Node.ELEMENT_NODE)
                 {
-                   NamedNodeMap attributes = fstNode.getAttributes();
-                   TableItem item = new TableItem(table, SWT.BORDER);
-
-                // Вывод информации про все атрибуты
-                for (int k = 0; k < attributes.getLength(); k++){
-                    
-                  if (debugMode==true)  System.out.println("Attribute name: " + attributes.item(k).getNodeName() + ", value: " + attributes.item(k).getNodeValue());   
-                printToTable(item, k+1, attributes.item(k).getNodeValue());
-                printToTable(item, 0, Integer.toString(je+1));
-               if(k>=2) buffer+=Integer.parseInt(attributes.item(k).getNodeValue());      
-                }
+                    Element element = (Element)node;
+                    for (int i=0; i<10; i++){
+                        studentData.add(element.getElementsByTagName("sem").item(i).getChildNodes().item(0).getNodeValue());
+                        printToTable(item, i+3,element.getElementsByTagName("sem").item(i).getChildNodes().item(0).getNodeValue());
+                        buffer+=Integer.parseInt(element.getElementsByTagName("sem").item(i).getChildNodes().item(0).getNodeValue());
+                    System.out.println("sem: " + element.getElementsByTagName("sem").item(i).getChildNodes().item(0).getNodeValue());}
+                   // System.out.println("Language: " + element.getElementsByTagName("sem").item(0).getChildNodes().item(0).getNodeValue());
                 }
                 dataBase.addToAmountMassive(buffer);
+                studentData.add(Integer.toString(buffer));
+                dataBase.addStudentData(studentData);
+                dataBase.outputStudents();
             }
+           
             
                     if (debugMode==true)dataBase.outputMassive();
         }
@@ -105,8 +125,8 @@ public void loadTableFromFile(boolean debugMode,String fileLocation,Table table)
     public void loadTable() {
         DataBase db = new DataBase();
         Display display = new Display();
-        Shell shell = new Shell(display, SWT.SHELL_TRIM);
-        GridLayout gridLayout = new GridLayout();
+       // Shell shell = new Shell(display, SWT.SHELL_TRIM);
+     //   GridLayout gridLayout = new GridLayout();
         Shell MainMenu = new Shell(display, SWT.SHELL_TRIM);
         Table table = new Table(MainMenu, SWT.READ_ONLY);
         GridData gridData = new GridData();
@@ -145,6 +165,9 @@ public void loadTableFromFile(boolean debugMode,String fileLocation,Table table)
         Button addItem = new Button(MainMenu, SWT.NONE);
         addItem.setBounds(306, 300, 305, 30);
         addItem.setText("Add item");
+        Button findItem = new Button(MainMenu, SWT.NONE);
+        findItem.setBounds(0, 330, 305, 30);
+        findItem.setText("Find item");
        loadTableFromFile(true,"data/iblog.xml",table);
         updateTable.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -155,12 +178,9 @@ public void loadTableFromFile(boolean debugMode,String fileLocation,Table table)
         addItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-               
                    UserDialog.addToTableDialog(MainMenu);
             }
         });
         WindowForm.WindowOpen(display, MainMenu, 630, 500);
     }
-    //java.text 
-    //java.time
 }
