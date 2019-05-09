@@ -13,34 +13,65 @@ import java.util.ArrayList;
  */
 public class DataBase {
 
-private ArrayList<ArrayList> students = new ArrayList();
-private ArrayList<Integer> amountOfWork = new ArrayList();//TODO: unnecessary, can be deleted;
-
-public void addStudentData(ArrayList incomingList){
+private static ArrayList<ArrayList> students = new ArrayList();
+//private ArrayList<Integer> amountOfWork = new ArrayList();//TODO: unnecessary, can be deleted;
+public int getStudentsSize(){
+   return students.size();
+}
+public int getStudentsSize(int indexOfElement){
+   return students.get(indexOfElement).size();
+}
+public static void addStudentData(ArrayList incomingList){
 students.add(incomingList); 
+}
+public String getStudentData(int studentIndex, int dataIndex){
+   return (String) students.get(studentIndex).get(dataIndex);
+}
+public ArrayList getStudentData(int studentIndex){
+  return students.get(studentIndex);
+}
+public int getIndexOfRowWithTarget(String target){
+        int indexOfRow=0;
+        boolean existence = false;
+      for (int i=0; i<students.size(); i++)
+              if (students.get(i).get(1).equals(target)) {indexOfRow=i; existence=true;}
+     
+     if(existence==true) return indexOfRow;
+     else return -1;
+    }
+public int getIndexOfRowWithTarget(String target, int columnIndex){
+        int indexOfRow=0;
+        boolean existence = false;
+      for (int i=0; i<students.size(); i++)
+              if (students.get(i).get(columnIndex).equals(target)) {indexOfRow=i; existence=true;}
+     
+     if(existence==true) return indexOfRow;
+     else return -1;
+    }
+public ArrayList getIndexesOfRowsWithTarget(String target, int indexOfColumn){
+        ArrayList<Integer> indexesOfRows = new ArrayList();
+      for (int i=0; i<students.size(); i++)
+              if (students.get(i).get(indexOfColumn).equals(target)) {indexesOfRows.add(i);}
+     return indexesOfRows;
+    }
+public boolean isExist(String target, int indexOfColumn){
+        boolean existence = false;
+      for (int i=0; i<students.size(); i++)
+              if (students.get(i).get(indexOfColumn).equals(target)) existence=true;
+     if(existence==true) return true;
+     else return false;
 }
 public void outputStudents(){
     System.out.println("--------DataBase--------");
 for (int i=0; i<students.size(); i++)
     for (int j=0; j<students.get(i).size(); j++){
-       if(j==0) System.out.print("group: "+students.get(i).get(j));
-       if(j==1) System.out.println(" name: "+students.get(i).get(j));
-       if(j>1 & j<11) System.out.println("sem: "+students.get(i).get(j));
-       if (j==11) System.out.println("summary work: "+students.get(i).get(j));
+       if(j==0) System.out.println("№: "+students.get(i).get(j));
+       if(j==1) System.out.println("name: "+students.get(i).get(j));
+       if (j==2) System.out.println("group: "+students.get(i).get(j));
+       if(j>2 & j<13) System.out.println("sem["+(j)+"]: "+students.get(i).get(j));
+       if (j==13) System.out.println("summary work: "+students.get(i).get(j));
+    //   System.out.println("Current element["+i+"]["+j+"]: "+students.get(i).get(j));
     }
-}
-public void addToAmountMassive(int number){//TODO: unnecessary, can be deleted;
-    amountOfWork.add(number);
-}
-public int getAmountOfWork(int index){//TODO: unnecessary, can be deleted;
-    return amountOfWork.get(index);
-}
-public int getLengthOfAmountMassive(){//TODO: unnecessary, can be deleted;
-    return amountOfWork.size();
-}
-public void outputMassive(){//TODO: unnecessary, can be deleted;
-    for (int i=0; i<amountOfWork.size(); i++)
-   System.out.println("Amount of work massive["+i+"]: "+getAmountOfWork(i));
 }
 private  int counter = 0;
 private boolean debugMode=false;
