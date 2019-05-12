@@ -8,11 +8,14 @@ package lab2ppvis;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -25,6 +28,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -43,12 +47,81 @@ import org.xml.sax.helpers.DefaultHandler;
 public class GUI {
    //private 
     public ArrayList<TableItem> rows=new ArrayList();
+    //public ArrayList<Integer> pages = new ArrayList()
+    private int numberOfPages=0;
+     int currentPageStart=0;
+     int currentPageEnd=10;
+     int numberOfRowsOnPage=10;
+     int currentPage=0;
+     Document documentTransfer;
     DataBase database = new DataBase();
+    public Document getDocument(){
+        return documentTransfer;
+    }
+      /*  public  DocumentBuilderFactory documentBuilderFactory;
+            public DocumentBuilder documentBuilder ;
+            public Document document;
+            public void loadFile() throws SAXException, IOException, ParserConfigurationException{
+            documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            document = documentBuilder.parse(DataBase.getFileName());
+            }*/
+   public void setNumberOfRowsOnPage(int newNumberOfRowsOnPage){
+       numberOfRowsOnPage=newNumberOfRowsOnPage;
+   }
     public static void printToTable(TableItem nameOfItem,int index, String information){
     nameOfItem.setText(index,information);
 }
- public void  fromDataBaseToTable(Table table){
+    public void getAmountOfPages(int amountOfStudents, int numberOfRowsOnPage){
+        int rowsCounter = 0;
+        for (int i=0; i<amountOfStudents;i++)
+            if (rowsCounter==numberOfRowsOnPage-1) {numberOfPages++;rowsCounter=0;}
+            else rowsCounter++;
+       if (rowsCounter>0) numberOfPages++;
+        System.out.println("Amount of pages: "+numberOfPages);
+         System.out.println("Amount of students: "+amountOfStudents);
+            
+            
+    }
+    public void  printChangeHistoryToTable(Table table, ArrayList<TableItem> arrayOfRows){
     //table.clearAll();
+    DataBase db = new DataBase();
+    table.removeAll();
+       arrayOfRows.clear();
+        for (int i=0; i<db.getChangeHistorySize(); i++){
+           ArrayList<String> toTable = new ArrayList();
+           toTable.addAll(db.getChangeHistory(i));
+        arrayOfRows.add(new TableItem(table, SWT.BORDER));
+        for (int j=0; j<db.getChangeHistorySize(i); j++)
+            printToTable(arrayOfRows.get(i),j,toTable.get(j));
+            }
+    }
+     public void  printDataBaseToTable(Table table,int start, int end){
+    table.removeAll();   
+       rows.clear();
+       int rowsCounter =0;
+        for (int i=start; i<end+1; i++){
+        rows.add(new TableItem(table, SWT.BORDER));
+        for (int j=0; j<database.getStudentsSize(i); j++)
+            printToTable(rows.get(rowsCounter),j,database.getStudentData(i, j));
+        rowsCounter++;
+            }
+    }
+      public void  printDataBaseToTable(Table table,int amountOfRows){
+    //table.clearAll();
+    //на for int i=start; i<stop; i++
+    table.removeAll();
+       rows.clear();
+        for (int i=0; i<amountOfRows; i++){
+           // TableItem row = new TableItem(table, SWT.BORDER);
+        rows.add(new TableItem(table, SWT.BORDER));
+        for (int j=0; j<database.getStudentsSize(i); j++)
+            printToTable(rows.get(i),j,database.getStudentData(i, j));
+            }
+    }
+ public void  printDataBaseToTable(Table table){
+    //table.clearAll();
+    //на for int i=start; i<stop; i++
     table.removeAll();
        rows.clear();
         for (int i=0; i<database.getStudentsSize(); i++){
@@ -70,39 +143,139 @@ public class GUI {
              DataBase.addStudentData(tempArray);
         }
     }
-   
-   public void addNewElement(String studentName, String studentGroup, ArrayList<Combo> comboList) throws TransformerException, IOException, SAXException, ParserConfigurationException{
-       DataBase db = new DataBase();    
-       int buffer = 0;
-       DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            Document document = documentBuilder.parse("data/iblog.xml");
 
-            Node root = document.getFirstChild();
-   
+   public void saveTableToFile(Document document, String fileNameOrPath,Shell shellForErrorWindow) throws TransformerException{
+       if (fileNameOrPath==null) {WindowForm.Error(shellForErrorWindow, "No path", "You did not inputed any file name or path."); return;}
+        File file = new File(fileNameOrPath);
+Transformer transformer = TransformerFactory.newInstance().newTransformer();
+transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+transformer.transform(new DOMSource(document), new StreamResult(file));
+   }
+  public void createFileWithRootElement(String fileName, Shell shellForErrorWindow) throws TransformerException, ParserConfigurationException, SAXException, IOException{
+DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+factory.setNamespaceAware(true);
+Document doc = factory.newDocumentBuilder().newDocument();
+            Element root = doc.createElement("students");
+           doc.appendChild(root);
+           File file = new File(fileName);
+ 
+Transformer transformer = TransformerFactory.newInstance().newTransformer();
+transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+transformer.transform(new DOMSource(doc), new StreamResult(file));
+         // saveTableToFile(doc,fileName, shellForErrorWindow);
+  }
+  
+ 
+  
+public void writeElement(ArrayList<ArrayList<String>> dataBase, String fileName, Shell shellForErrorWindow) throws TransformerException, IOException, SAXException, ParserConfigurationException{
+     DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder documentBuilder  = documentBuilderFactory.newDocumentBuilder();
+            Document document = documentBuilder.parse(DataBase.getFileName());
+           // Document doc = documentBuilderFactory.newDocumentBuilder().newDocument();
+           // Element root = doc.createElement("students");
+            //doc.appendChild(root);
+           //File file = new File(fileName);
+            //Корневой элемент
+           Node root = document.getFirstChild();
+           for (int i=0; i<database.getStudentsSize(); i++){
+          // for (int j=0; j<database.getStudentsSize(i); j++){
            Element student = document.createElement("student");
            root.appendChild(student);
-           student.setAttribute("name", studentName);
-           student.setAttribute("group", studentGroup);
+           student.setAttribute("name", dataBase.get(i).get(1));
+           student.setAttribute("group", dataBase.get(i).get(2));
+           for (int k=0; k<10; k++){
+            Element sem = document.createElement("sem");
+            sem.appendChild(document.createTextNode(dataBase.get(i).get(k+3)));
+            sem.setAttribute("id", Integer.toString(k));
+             student.appendChild(sem);
+           }
+           }
+         //Теперь запишем контент в XML файл
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource domSource = new DOMSource(document);
+            StreamResult streamResult = new StreamResult(new File(fileName));
+           
+            transformer.transform(domSource, streamResult);
+           
+            System.out.println("Файл сохранен!");
+   }
+   
+   public void addNewElement(Table table,String studentName, String studentGroup, ArrayList<Combo> comboList, Shell shellForErrorWindow) throws TransformerException, IOException, SAXException, ParserConfigurationException{
+       DataBase db = new DataBase();    
+       int buffer = 0;
+     /*DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder documentBuilder  = documentBuilderFactory.newDocumentBuilder();
+            Document document = documentBuilder.parse(DataBase.getFileName());*/
+
+ArrayList<String> toDataBase = new ArrayList();
+toDataBase.add(Integer.toString(db.getStudentsSize()-1));
+           // Node root = document.getFirstChild();
+   
+  //         Element student = document.createElement("student");
+    //       root.appendChild(student);
+      //     student.setAttribute("name", studentName);
+        //   student.setAttribute("group", studentGroup);
+                      toDataBase.add(studentName);
+                                            toDataBase.add(studentGroup);
+
            
            for (int i=0; i<10; i++){
-               Element sem = document.createElement("sem");
-            sem.appendChild(document.createTextNode(comboList.get(i).getText()));
-            sem.setAttribute("id", Integer.toString(i));
-             student.appendChild(sem);
+          //     Element sem = document.createElement("sem");
+            //sem.appendChild(document.createTextNode(comboList.get(i).getText()));
+            //sem.setAttribute("id", Integer.toString(i));
+            // student.appendChild(sem);
+             toDataBase.add(comboList.get(i).getText());
              buffer +=Integer.parseInt(comboList.get(i).getText());
            }
+           toDataBase.add(Integer.toString(buffer));
+           DataBase.addStudentData(toDataBase);
+           //printDataBaseToTable(table);
+           TableItem item = new TableItem(table, SWT.BORDER);
+           for (int i=0; i<13; i++)
+               printToTable(item,i, toDataBase.get(i));
           // db.addToAmountMassive(buffer);
-             TransformerFactory transformerFactory = TransformerFactory.newInstance();
+          /*   TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource domSource = new DOMSource(document);
             StreamResult streamResult = new StreamResult(new File("data/iblog.xml"));
+            transformer.transform(domSource, streamResult);*/
+        //  saveTableToFile(document,DataBase.getFileName(),shellForErrorWindow);
+   }
+      public void deleteElement(int indexOfStudent,Shell parentShell) throws TransformerException, IOException, SAXException, ParserConfigurationException{
+       DataBase db = new DataBase();    
+       DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            Document document = documentBuilder.parse(DataBase.getFileName());
+             Node root = document.getFirstChild();
+           Node student = document.getElementsByTagName("student").item(indexOfStudent);
+           root.removeChild(student);
+        // db.addToChangeHitory(db.getStudentData(indexOfStudent));
+         db.removeStudent(indexOfStudent);
+         //  saveTableToFile(document, "data/iblog.xml", parentShell);
+   }
+       public void clearFile(String fileName) throws TransformerException, IOException, SAXException, ParserConfigurationException{
+       DataBase db = new DataBase();    
+       DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            Document document = documentBuilder.parse(fileName);
+             Node root = document.getElementsByTagName("students").item(0);
+           document.removeChild(root);
+        // db.addToChangeHitory(db.getStudentData(indexOfStudent));
+        // db.removeStudent(indexOfStudent);
+         //  saveTableToFile(document, "data/iblog.xml", parentShell);
+          TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource domSource = new DOMSource(document);
+            StreamResult streamResult = new StreamResult(new File(fileName));
+           
             transformer.transform(domSource, streamResult);
    }
-public void loadTableFromFile(boolean debugMode,String fileLocation,Table table){
- DataBase dataBase = new DataBase();  
+      
+public void loadTableFromFile(boolean debugMode,String fileLocation,Table table){ 
    try
         {
+           // DataBase db = new DataBase();
             SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
             SAXParser saxParser = saxParserFactory.newSAXParser();
  
@@ -201,11 +374,12 @@ tempAttrStorage=Integer.parseInt(value);
                     }
                 }
             };
-            saxParser.parse("data/iblog.xml", defaultHandler);
+            saxParser.parse(DataBase.getFileName(), defaultHandler);
         }
-        catch (IOException | ParserConfigurationException | SAXException ex)
+        catch (IOException | ParserConfigurationException | SAXException |IllegalArgumentException ex)
         {
-            System.out.println(ex.getLocalizedMessage());
+            WindowForm.Error(new Shell(), "File open error", "You did not choosed the file.");
+            //System.out.println(ex.getLocalizedMessage());
         }
 }
     public void loadTable() {
@@ -254,14 +428,81 @@ tempAttrStorage=Integer.parseInt(value);
         Button findItem = new Button(MainMenu, SWT.NONE);
         findItem.setBounds(0, 330, 305, 30);
         findItem.setText("Find item");
-       loadTableFromFile(true,"data/iblog.xml",table);
-                 findItem.addSelectionListener(new SelectionAdapter() {
+        Button loadTable= new Button(MainMenu, SWT.NONE);
+        loadTable.setBounds(0, 360, 305, 30);
+        loadTable.setText("Load table");
+        Button deleteItem = new Button(MainMenu, SWT.NONE);
+        deleteItem.setBounds(305,330,305,30);
+        deleteItem.setText("Delete item");
+                Button back = new Button(MainMenu, SWT.NONE);
+                back.setBounds(615, 330, 30, 30);
+                back.setText("<");
+                Label pageInfo = new Label(MainMenu,SWT.NONE);
+                pageInfo.setText("Page "+currentPage+"|"+numberOfPages);
+                pageInfo.setBounds(650,330, 50, 30);
+                        Button forward = new Button(MainMenu, SWT.NONE);
+                        forward.setBounds(700, 330, 30, 30);
+                forward.setText(">");
+                Button settings = new Button(MainMenu, SWT.NONE);
+                settings.setBounds(615, 300, 100, 30);
+                settings.setText("Settings");
+      // loadTableFromFile(true,db.getFileName(),table);
+       printDataBaseToTable(table);
+       getAmountOfPages(db.getStudentsSize(), 10);
+        loadTable.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                                UserDialog ud = new UserDialog();
+                ud.chooseFileDialog(MainMenu);
+                loadTableFromFile(true,DataBase.getFileName(),table);
+            }
+        });
+        settings.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
                 UserDialog ud = new UserDialog();
-                 ud.loadFindItemDialog(MainMenu);
-                 //fromTableToDataBase();
-                 fromDataBaseToTable(table);
+                ud.settingsDialog(MainMenu);
+                loadTableFromFile(true,DataBase.getFileName(),table);
+            }
+        });
+       back.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                currentPageStart-=10;
+                currentPageEnd-=10;
+                currentPage--;
+               // printDataBaseToTable(table,currentPageStart,currentPageEnd);
+               try{
+                                printDataBaseToTable(table,currentPageStart,currentPageEnd);
+                                                pageInfo.setText("Page "+currentPage+"|"+numberOfPages);
+               }catch(ArrayIndexOutOfBoundsException ex){WindowForm.Error(MainMenu, "End of file","You have reached the end of file");}
+
+            }
+        });
+        forward.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                currentPageStart+=10;
+                currentPageEnd+=10;
+                currentPage++;
+                 try{
+                printDataBaseToTable(table,currentPageStart,currentPageEnd);
+                                pageInfo.setText("Page "+currentPage+"|"+numberOfPages);
+                 }catch(ArrayIndexOutOfBoundsException ex){WindowForm.Error(MainMenu, "End of file","You have reached the end of file");}
+            }
+        });
+       deleteItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                UserDialog ud = new UserDialog();
+                try {
+                    // ud.loadFindItemDialog(MainMenu);
+                   // deleteElement(8,MainMenu);
+                    ud.changeTableDialog(MainMenu);
+                } catch (ParserConfigurationException ex) {
+                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+               //  printDataBaseToTable(table);
                  db.outputStudents();
             }
         });
@@ -270,14 +511,28 @@ tempAttrStorage=Integer.parseInt(value);
         updateTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                // loadTableFromFile(true,"data/iblog.xml",table);
-                fromDataBaseToTable(table);
+                try{
+             //   UserDialog ud = new UserDialog();
+                //db.removeDataFromBase();
+              //  loadTableFromFile(true,DataBase.getFileName(),table);
+                printDataBaseToTable(table);
+                }catch(IndexOutOfBoundsException ex){WindowForm.Error(MainMenu, "Fatal error", "Possible data format in the file are wrong, or some data missed");}
             }
         });
         addItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                   UserDialog.addToTableDialog(MainMenu);
+                   UserDialog.addToTableDialog(table,MainMenu);
+                   //printDataBaseToTable(table);
+            }
+        });
+         findItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                UserDialog ud = new UserDialog();
+                   ud.loadFindItemDialog(MainMenu);
+                   //printDataBaseToTable(table);
+                  // loadTableFromFile(true,DataBase.getFileName(),table);
             }
         });
         WindowForm.WindowOpen(display, MainMenu, 1270, 500);

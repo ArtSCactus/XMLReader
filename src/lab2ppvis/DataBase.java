@@ -12,9 +12,39 @@ import java.util.ArrayList;
  * @author Asus
  */
 public class DataBase {
-
+private static String fileName;
 private static ArrayList<ArrayList> students = new ArrayList();
-//private ArrayList<Integer> amountOfWork = new ArrayList();//TODO: unnecessary, can be deleted;
+private static ArrayList<ArrayList> changeHistory = new ArrayList();
+public void removeDataFromBase(){
+    students.clear();
+}
+public ArrayList getDataBase(){
+    return students;
+}
+public void setFileName(String newFileName){
+    fileName=newFileName;
+}
+public static String getFileName(){
+    return fileName;
+}
+public void addToChangeHitory(ArrayList<String> incommingList){
+changeHistory.add(incommingList);
+}
+public void removeStudent(int indexOfStudent){
+    students.remove(indexOfStudent);
+}
+public ArrayList getChangeHistory(int indexOfStudent){
+    return changeHistory.get(indexOfStudent);
+}
+/*public String getChangeHistory(int indexOfStudent, int columnIndex){
+      return (String) changeHistory.get(indexOfStudent).get(columnIndex); //java.lang.String cannot be cast to java.util.ArrayList
+}*/
+public int getChangeHistorySize(){
+      return changeHistory.size();
+}
+public int getChangeHistorySize(int indexOfStudent){
+      return changeHistory.get(indexOfStudent).size();
+}
 public int getStudentsSize(){
    return students.size();
 }
@@ -54,6 +84,12 @@ public ArrayList getIndexesOfRowsWithTarget(String target, int indexOfColumn){
               if (students.get(i).get(indexOfColumn).equals(target)) {indexesOfRows.add(i);}
      return indexesOfRows;
     }
+public ArrayList getIndexesOfRowsWithTarget(String nameOrGroup, String downLimit, String upLimit, int firstColumn, int secondColumn){
+        ArrayList<Integer> indexesOfRows = new ArrayList();
+      for (int i=0; i<students.size(); i++)
+              if (students.get(i).get(firstColumn).equals(nameOrGroup) && Integer.parseInt((String)students.get(i).get(13))>=Integer.parseInt(downLimit) &&  Integer.parseInt((String)students.get(i).get(13))<=Integer.parseInt(upLimit)) {indexesOfRows.add(i);}
+     return indexesOfRows;
+    }
 public boolean isExist(String target, int indexOfColumn){
         boolean existence = false;
       for (int i=0; i<students.size(); i++)
@@ -75,7 +111,7 @@ for (int i=0; i<students.size(); i++)
 }
 private  int counter = 0;
 private boolean debugMode=false;
-private String fileName;
+
 public  int getCounter(){
     return counter;
 }

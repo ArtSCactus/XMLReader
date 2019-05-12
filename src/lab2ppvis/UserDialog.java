@@ -9,7 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.control.CheckBox;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.eclipse.swt.SWT;
@@ -22,12 +23,14 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
@@ -35,15 +38,50 @@ import org.xml.sax.SAXException;
  * @author Asus
  */
 public class UserDialog {
-
+    DataBase db = new DataBase();
+    private String bufferName="";
+    private static final String[][] FILTERS = {{"Таблица XML (*.xml)" , "*.xml"},
+                                           {"Файлы Excel (*.xlsx)", "*.xlsx"},
+                                           {"Файлы Adobe (*.pdf)" , "*.pdf" },
+                                           {"Файлы Word (*.docx)" , "*.docx"},
+                                           {"Все файлы (*.*)"     , "*.*"}};
+ private void setFilters(FileDialog dialog)
+{
+    String[] names = new String[FILTERS.length];
+    String[] exts  = new String[FILTERS.length];
+    for (int i = 0; i < FILTERS.length; i++) {
+        names[i] = FILTERS[i][0];
+        exts [i] = FILTERS[i][1];
+    }
+    // Определение фильтра диалога FileDialog
+    dialog.setFilterNames(names);
+    dialog.setFilterExtensions(exts);
+}
     public static int arrayListCounter = 0;
-public void loadGroupList(Combo combo){
+    public void chooseFileDialog(Shell parentShell){
+        FileDialog dlg = new FileDialog(parentShell, SWT.OPEN);
+setFilters(dlg);
+String fname = dlg.open();
+if (fname != null)
+    //System.out.println ("" + fname);
+    db.setFileName(fname);
+    }
+    public void saveFileDialog(Shell parentShell){
+         // Диалоговое окно сохранения файла
+FileDialog dlg = new FileDialog(parentShell, SWT.SAVE);
+setFilters(dlg);
+String fname = dlg.open();
+if (fname != null)
+    bufferName=fname;
+    System.out.println ("" + fname);
+    }
+public void loadGroupList(Combo combo, int column){
                     boolean exist = false;
                     DataBase db = new DataBase();
                 
                 for(int i=0; i<db.getStudentsSize(); i++){
                     exist = false;
-                String s = db.getStudentData(i, 2);
+                String s = db.getStudentData(i, column);
                 if (s == null || s.length() == 0) {
                     return;
                 }
@@ -59,45 +97,77 @@ public void loadGroupList(Combo combo){
                 }
                 }
 }
-    public static void changeTableDialog(Shell shell) throws ParserConfigurationException{
-        DataBase model = new DataBase();
-        final Shell dialog = new Shell(shell, SWT.DIALOG_TRIM);
-        dialog.setLayout(new GridLayout(3, false));
-        Composite InputUI = new Composite(dialog, SWT.BORDER);
-        InputUI.setBounds(0, 0, 305, 30);
-        Text textToTable = new Text(InputUI, SWT.BORDER);
-        textToTable.setBounds(0, 0, 100, 20);
-        InputUI.setLayout(new RowLayout(SWT.HORIZONTAL));
-        Button inputToTable = new Button(InputUI, SWT.NONE);
-        inputToTable.setText("Add to table");
-        inputToTable.setBounds(100, 0, 100, 20);
-        Combo ColumnMode = new Combo(InputUI, SWT.DROP_DOWN);
-        Combo RowMode = new Combo(InputUI, SWT.DROP_DOWN);
-        RowMode.setBounds(300, 0, 100, 20);
-        ColumnMode.setBounds(200, 0, 100, 20);
-        ColumnMode.add("ФИО");
-        ColumnMode.add("Group");
-        ColumnMode.add("Work");
-        ColumnMode.select(0);
-        RowMode.add(Integer.toString(model.getCounter()));
-        RowMode.select(0);
-        Button ok = new Button(dialog, SWT.PUSH);
-        ok.setText("OK");
-        ok.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-        ok.addSelectionListener(widgetSelectedAdapter(event -> {      
-        }));
-        inputToTable.addSelectionListener(widgetSelectedAdapter(event -> {
-    
-            String getInformation = textToTable.getText();
-            arrayListCounter++;
+    public void changeTableDialog(Shell parentShell) throws ParserConfigurationException{
+        DataBase db = new DataBase();
+        GUI gui = new GUI();
+ Shell deleteItemShell = new Shell(parentShell, SWT.APPLICATION_MODAL
+        | SWT.DIALOG_TRIM | SWT.ON_TOP);
+        Table table = new Table(deleteItemShell, SWT.READ_ONLY);
+        GridData gridData = new GridData();
+        gridData.horizontalSpan = 2;
+        gridData.horizontalAlignment = SWT.FILL;
+        gridData.grabExcessHorizontalSpace = true;
+        gridData.verticalAlignment = SWT.FILL;
+        gridData.grabExcessVerticalSpace = true;
+        table.setLayoutData(gridData);
+        table.setBounds(0, 0, 600, 300);
+        table.setLinesVisible(true);
+        table.computeSize(db.getCounter(), db.getCounter());
+        table.setHeaderVisible(true);
+        TableColumn numberOfRow = new TableColumn(table, SWT.BORDER);
+        numberOfRow.setText("№");
+        numberOfRow.setWidth(90);
+        TableColumn studentNSF = new TableColumn(table, SWT.BORDER);
+        studentNSF.setText("ФИО студента");
+        studentNSF.setWidth(170);
+        table.setHeaderVisible(true);
+        TableColumn group = new TableColumn(table, SWT.BORDER);
+        group.setText("Группа");
+        group.setWidth(100);
+        table.setHeaderVisible(true);
+        ArrayList<TableColumn> columns = new ArrayList();
+        ArrayList<TableItem> rows = new ArrayList();
+        for (int i = 0; i < 10; i++) {
+            TableColumn SocialWork = new TableColumn(table, SWT.BORDER);
+            SocialWork.setText("Семестр " + (i + 1));
+            SocialWork.setWidth(90);
+            columns.add(SocialWork);
+        }
+          Label highLimit = new Label(deleteItemShell, SWT.NONE);
+        highLimit.setBounds(0,300,130,25);
+        highLimit.setText("Input number of student: ");
+        Text indexInput = new Text(deleteItemShell, SWT.BORDER);
+        indexInput.setBounds(135, 300, 70, 25);
+        Button deleteItem = new Button(deleteItemShell, SWT.NONE);
+        deleteItem.setBounds(206, 300, 80, 30);
+        deleteItem.setText("Delete item");
+        gui.printChangeHistoryToTable(table, rows);
+         deleteItem.addSelectionListener(widgetSelectedAdapter(event -> {
+           
+            try {
+                int target = Integer.parseInt(indexInput.getText());
+                if (Integer.parseInt(indexInput.getText())<0) WindowForm.Error(deleteItemShell, "Error", "Impossible value of student index");
+                //проверка на тип данных
+                                    TableItem row = new TableItem(table, SWT.BORDER);
+                                                        rows.add(row);
+                                                        db.addToChangeHitory(db.getStudentData(target));
+                                                        gui.printChangeHistoryToTable(table, rows);
+                for (int i=0; i<14; i++){
+//                GUI.printToTable(row,i,db.getStudentData(target, i));
+                }
+                gui.deleteElement(Integer.parseInt(indexInput.getText()), deleteItemShell);
+                //gui.fromDataBaseToTable(table);
+               // gui.printChangeHistory(table, rows);
+            } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
+                Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         ));
-        //dialog.setDefaultButton (ok);
-        dialog.pack();
-        dialog.open();
+        deleteItemShell.pack();
+        deleteItemShell.open();
     }
 
-    public static void addToTableDialog(Shell shell) { 
+    public static void addToTableDialog(Table table,Shell shell) { 
         //DataBase model = new DataBase();
         ArrayList<Label> labelList = new ArrayList();
         ArrayList<Combo> comboList = new ArrayList();
@@ -127,8 +197,8 @@ public void loadGroupList(Combo combo){
             semCombo.setBounds(35,0,40,50);
             semCombo.setItems(numbers);
             semCombo.select(0);
-           if (i==9)semLabel.setText("sem10");
-           else semLabel.setText("sem "+Integer.toString(i+1));
+           if (i==9)semLabel.setText("Term 10");
+           else semLabel.setText("Term "+Integer.toString(i+1));
                     }
         Composite UI = new Composite(dialog, SWT.BORDER);
         UI.setBounds(0, 150, 305, 30);
@@ -138,11 +208,10 @@ public void loadGroupList(Combo combo){
         inputToTable.setText("Add to table");
         inputToTable.addSelectionListener(widgetSelectedAdapter(event -> {
                     GUI gui = new GUI();
-                    WindowForm wf = new WindowForm();
-                    if (studentName.getText().equals("")){ wf.Error(dialog,"Error 001","One of text fields are empty");return;}
+                    if (studentName.getText().equals("")){ WindowForm.Error(dialog,"Wrong info","One of text fields are empty");return;}
             try {
                 
-                gui.addNewElement(studentName.getText(), studentGroup.getText(), comboList);
+                gui.addNewElement(table,studentName.getText(), studentGroup.getText(), comboList, dialog);
             } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
                 Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -157,7 +226,7 @@ public void loadGroupList(Combo combo){
        // Shell shell = new Shell(display, SWT.SHELL_TRIM);
      //   GridLayout gridLayout = new GridLayout();
         Shell findItemShell = new Shell(parentShell, SWT.APPLICATION_MODAL
-        | SWT.DIALOG_TRIM | SWT.ON_TOP);
+        | SWT.DIALOG_TRIM);
         Table table = new Table(findItemShell, SWT.READ_ONLY);
         GridData gridData = new GridData();
         gridData.horizontalSpan = 2;
@@ -189,23 +258,31 @@ public void loadGroupList(Combo combo){
             SocialWork.setWidth(90);
             columns.add(SocialWork);
         }
-        Text targetInput = new Text(findItemShell, SWT.BORDER);
-        targetInput.setBounds(0, 300, 305, 30);
+          Label highLimit = new Label(findItemShell, SWT.NONE);
+        highLimit.setBounds(0,300,80,25);
+        highLimit.setText("Hight limit: ");
+         Label lowLimit = new Label(findItemShell, SWT.NONE);
+        lowLimit.setBounds(0,330,80,25);
+        lowLimit.setText("Down limit: ");
+        Text upLimit = new Text(findItemShell, SWT.BORDER);
+        upLimit.setBounds(80, 300, 50, 25);
+        Text downLimit = new Text(findItemShell, SWT.BORDER);
+        downLimit.setBounds(80, 330, 50, 25);
         Label comboInfo = new Label(findItemShell, SWT.NONE);
-        comboInfo.setBounds(310,300,80,30);
+        comboInfo.setBounds(150,300,80,30);
         comboInfo.setText("List of groups: ");
         Label checkInfo = new Label(findItemShell, SWT.NONE);
-        checkInfo.setBounds(310,330,155,30);
+        checkInfo.setBounds(150,330,165,30);
         checkInfo.setText("Use amount of work in search: ");
-        Button useGroupInSearch = new Button(findItemShell,SWT.CHECK);
-        useGroupInSearch.setBounds(470,329,17,17);
+        Button useAmountOfWorkInSearch = new Button(findItemShell,SWT.CHECK);
+        useAmountOfWorkInSearch.setBounds(315,329,17,17);
         Combo groupsList = new Combo(findItemShell, SWT.NONE);
-        groupsList.setBounds(390, 300, 100, 30);
+        groupsList.setBounds(230, 300, 100, 30);
         Button findItem = new Button(findItemShell, SWT.NONE);
-        findItem.setBounds(0, 330, 305, 30);
-        findItem.setText("Find item");
+        findItem.setBounds(340, 300, 80, 30);
+        findItem.setText("Find items");
 
-        loadGroupList(groupsList);
+        loadGroupList(groupsList, 2);
         findItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
@@ -214,13 +291,19 @@ public void loadGroupList(Combo combo){
            rows.clear();
            String target=groupsList.getText();
            ArrayList<Integer> indexes = new ArrayList();
-         /*  for (int k=0; k<indexes.size(); k++)
-               System.out.println("indexes["+k+"]: "+indexes.get(k));*/
+         if (useAmountOfWorkInSearch.getSelection()){ 
+             if (downLimit.getText().equals("") || upLimit.getText().equals("")){ WindowForm.Error(findItemShell,"Limits missed", "You did not inputed limit");return;}
+             for (int i=0; i<db.getStudentsSize(); i++){
+              if (db.getStudentData(i).get(1).equals(target)) { indexes.addAll(db.getIndexesOfRowsWithTarget(target,downLimit.getText(),upLimit.getText()/*targetInput.getText()*/,1,13));elementNotFound=false;break;} //that's name of student
+              else {if(db.getStudentData(i).get(2).equals(target)){indexes.addAll(db.getIndexesOfRowsWithTarget(target,downLimit.getText(),upLimit.getText()/*targetInput.getText()*/,2,13));;elementNotFound=false;break;} //that's group of student
+              else elementNotFound=true;
+           }}}
+         else {
            for (int i=0; i<db.getStudentsSize(); i++){
               if (db.getStudentData(i).get(1).equals(target)) { indexes.addAll(db.getIndexesOfRowsWithTarget(target,1));elementNotFound=false;break;} //that's name of student
               else {if(db.getStudentData(i).get(2).equals(target)){indexes.addAll(db.getIndexesOfRowsWithTarget(target,2));;elementNotFound=false;break;} //that's group of student
               else elementNotFound=true;
-           }
+           }}
            }
        if (elementNotFound==true){WindowForm.Error(findItemShell, "Not exist", "I didn't found any name or group number like that. :("); return;}
            if (indexes.isEmpty()) {WindowForm.Error(findItemShell, "Not exist", "I didn't found any name or group number like that. :("); return;}
@@ -238,6 +321,102 @@ public void loadGroupList(Combo combo){
         });
         findItemShell.pack();
         findItemShell.open();
+    }
+    public void settingsDialog(Shell parentShell){
+        Shell settingsDialogShell = new Shell (parentShell,SWT.APPLICATION_MODAL
+        | SWT.DIALOG_TRIM);
+        Button openFile = new Button(settingsDialogShell, SWT.NONE);
+        openFile.setBounds(0,0,80,30);
+        openFile.setText("Open file");
+        openFile.addSelectionListener(widgetSelectedAdapter(event -> {
+                GUI gui = new GUI();
+                try {
+                chooseFileDialog(settingsDialogShell);
+            
+                //gui.loadFile();
+            } catch (IllegalArgumentException ex) {
+                //Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
+                return;
+            }
+        }
+        ));
+        Button saveFile = new Button(settingsDialogShell, SWT.NONE);
+        saveFile.setBounds(0,35,80,30);
+        saveFile.setText("Save table");
+        saveFile.addSelectionListener(widgetSelectedAdapter(event -> {
+                GUI gui = new GUI();
+            try {
+                newOrOldFile(settingsDialogShell,bufferName);
+            } catch (SAXException | IOException | ParserConfigurationException ex) {
+                Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        ));
+        Label textInfo = new Label(settingsDialogShell, SWT.NONE);
+        textInfo.setBounds(90,0,185,25);
+        textInfo.setText("Input number of rows on the page: ");
+        Text inputRowsOnPage = new Text(settingsDialogShell, SWT.BORDER);
+        inputRowsOnPage.setBounds(85,25,150,30);
+        Button setNumberOfRowsOnPage = new Button(settingsDialogShell, SWT.NONE);
+         setNumberOfRowsOnPage.setBounds(130,60,80,30);
+       setNumberOfRowsOnPage.setText("Apply");
+        setNumberOfRowsOnPage.addSelectionListener(widgetSelectedAdapter(event -> {
+               GUI gui = new GUI();
+               gui.setNumberOfRowsOnPage(Integer.parseInt(textInfo.getText()));
+        }
+        ));
+       settingsDialogShell.pack();
+              settingsDialogShell.open();
+
+    }
+    public void newOrOldFile(Shell parentShell,String fileName) throws SAXException, IOException, ParserConfigurationException{
+     /*   DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder documentBuilder  = documentBuilderFactory.newDocumentBuilder();
+            Document document = documentBuilder.parse(fileName);*/
+        Shell newOrOldFileDialogShell = new Shell(parentShell,SWT.APPLICATION_MODAL
+        | SWT.DIALOG_TRIM);
+        newOrOldFileDialogShell.setText("How to save?");
+        Label dialogInfo = new Label(newOrOldFileDialogShell,SWT.CENTER);
+        dialogInfo.setBounds(0,0,100,30);
+        dialogInfo.setText("Save in a new file or in the current?");
+        Button newFile = new Button(newOrOldFileDialogShell, SWT.NONE);
+        newFile.setBounds(0,100,150,30);
+        newFile.setText("New file");
+        Button oldFile = new Button(newOrOldFileDialogShell, SWT.NONE | SWT.CENTER);
+        oldFile.setBounds(300,100,100,30);
+        oldFile.setText("Current file");
+        newFile.addSelectionListener(widgetSelectedAdapter(event -> {
+               GUI gui = new GUI();
+            try {
+                saveFileDialog(newOrOldFileDialogShell);
+                gui.createFileWithRootElement(bufferName, parentShell);
+               // for (int i=0; i<db.getStudentsSize(); i++)
+                    gui.writeElement(db.getDataBase(), bufferName, parentShell);
+              // gui.saveTableToFile( bufferName, parentShell);
+            }catch (TransformerException ex) {
+               return;
+            }
+            catch (IOException | SAXException | ParserConfigurationException ex) {
+                Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            newOrOldFileDialogShell.close();
+        }
+        ));
+         oldFile.addSelectionListener(widgetSelectedAdapter(event -> {
+               GUI gui = new GUI();
+            try {
+                //gui.clearFile(DataBase.getFileName());
+                     gui.createFileWithRootElement(DataBase.getFileName(), parentShell);
+               // for (int i=0; i<db.getStudentsSize(); i++)
+                    gui.writeElement(db.getDataBase(), DataBase.getFileName(), parentShell);
+            } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
+                Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            newOrOldFileDialogShell.close();
+        }
+        ));
+        newOrOldFileDialogShell.pack();
+        newOrOldFileDialogShell.open();
     }
     }
 
