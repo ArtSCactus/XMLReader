@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.eclipse.swt.SWT;
@@ -30,7 +28,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
@@ -64,7 +61,7 @@ setFilters(dlg);
 String fname = dlg.open();
 if (fname != null)
     //System.out.println ("" + fname);
-    db.setFileName(fname);
+    DataBase.setFileName(fname);
     }
     public void saveFileDialog(Shell parentShell){
          // Диалоговое окно сохранения файла
@@ -157,7 +154,7 @@ public void loadGroupList(Combo combo, int column){
                 }
                 gui.deleteElement(Integer.parseInt(indexInput.getText()), deleteItemShell);
                 //gui.fromDataBaseToTable(table);
-               // gui.printChangeHistory(table, rows);
+               //gui.printChangeHistory(table, rows);
             } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
                 Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -209,8 +206,7 @@ public void loadGroupList(Combo combo, int column){
         inputToTable.addSelectionListener(widgetSelectedAdapter(event -> {
                     GUI gui = new GUI();
                     if (studentName.getText().equals("")){ WindowForm.Error(dialog,"Wrong info","One of text fields are empty");return;}
-            try {
-                
+            try {         
                 gui.addNewElement(table,studentName.getText(), studentGroup.getText(), comboList, dialog);
             } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
                 Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
@@ -362,7 +358,10 @@ public void loadGroupList(Combo combo, int column){
        setNumberOfRowsOnPage.setText("Apply");
         setNumberOfRowsOnPage.addSelectionListener(widgetSelectedAdapter(event -> {
                GUI gui = new GUI();
-               gui.setNumberOfRowsOnPage(Integer.parseInt(textInfo.getText()));
+               //int numberOfRowsOnPage=Integer.parseInt(inputRowsOnPage.getText());
+               gui.setNumberOfRowsOnPage(Integer.parseInt(inputRowsOnPage.getText()));
+               gui.getAmountOfPages(db.getStudentsSize(),Integer.parseInt(inputRowsOnPage.getText()));
+               settingsDialogShell.close();
         }
         ));
        settingsDialogShell.pack();
@@ -390,8 +389,8 @@ public void loadGroupList(Combo combo, int column){
             try {
                 saveFileDialog(newOrOldFileDialogShell);
                 gui.createFileWithRootElement(bufferName, parentShell);
-               // for (int i=0; i<db.getStudentsSize(); i++)
-                    gui.writeElement(db.getDataBase(), bufferName, parentShell);
+                //for (int i=0; i<db.getStudentsSize(); i++)
+                 //   gui.writeElement(db.getDataBase(), bufferName, parentShell);
               // gui.saveTableToFile( bufferName, parentShell);
             }catch (TransformerException ex) {
                return;
@@ -405,9 +404,9 @@ public void loadGroupList(Combo combo, int column){
          oldFile.addSelectionListener(widgetSelectedAdapter(event -> {
                GUI gui = new GUI();
             try {
-                //gui.clearFile(DataBase.getFileName());
-                     gui.createFileWithRootElement(DataBase.getFileName(), parentShell);
-               // for (int i=0; i<db.getStudentsSize(); i++)
+               gui.clearFile(DataBase.getFileName(), true);
+                    // gui.createFileWithRootElement(DataBase.getFileName(), parentShell);
+              //  for (int i=0; i<db.getStudentsSize(); i++)
                     gui.writeElement(db.getDataBase(), DataBase.getFileName(), parentShell);
             } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
                 Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);

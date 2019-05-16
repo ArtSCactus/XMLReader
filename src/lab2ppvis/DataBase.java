@@ -21,7 +21,7 @@ public void removeDataFromBase(){
 public ArrayList getDataBase(){
     return students;
 }
-public void setFileName(String newFileName){
+public static void setFileName(String newFileName){
     fileName=newFileName;
 }
 public static String getFileName(){
