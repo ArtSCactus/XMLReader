@@ -1,5 +1,5 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
+ * To change this license header, choose License Headers in Proindexect Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -29,32 +29,32 @@ GUI gui = new GUI();
         gui.rows.clear();
         int rowsCounter = 0;
         String nameTranslator = "";
-        int jSaverInCaseOfException=0;
+        int indexSaverInCaseOfException=0;
         for (int i = start; i < end + 1; i++) {
             gui.rows.add(new TableItem(table, SWT.BORDER));
             try {
-                for (int j = 0; j < gui.userDialog.getStudentsSize(i); j++) {
-                    jSaverInCaseOfException=j;
-                    switch (j) {
+                for (int index = 0; index < gui.userDialog.getStudentsSize(i); index++) {
+                    indexSaverInCaseOfException=index;
+                    switch (index) {
                         case 0:
-                            printToTable(gui.rows.get(rowsCounter), 0, gui.userDialog.getStudentData(i, j));
+                            printToTable(gui.rows.get(rowsCounter), 0, gui.userDialog.getStudentData(i, index));
                             break;
                         case 1:
-                            nameTranslator += gui.userDialog.getStudentData(i, j) + " ";
+                            nameTranslator += gui.userDialog.getStudentData(i, index) + " ";
                             break;
                         case 2:
-                            nameTranslator += gui.userDialog.getStudentData(i, j) + " ";
+                            nameTranslator += gui.userDialog.getStudentData(i, index) + " ";
                             break;
                         case 3:
-                            nameTranslator += gui.userDialog.getStudentData(i, j) + " ";
+                            nameTranslator += gui.userDialog.getStudentData(i, index) + " ";
                             break;
                         case 4:
                             printToTable(gui.rows.get(rowsCounter), 1, nameTranslator);
                             nameTranslator = "";
-                            printToTable(gui.rows.get(rowsCounter), j - 2, gui.userDialog.getStudentData(i, j));
+                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.userDialog.getStudentData(i, index));
                             break;
                         default:
-                            printToTable(gui.rows.get(rowsCounter), j - 2, gui.userDialog.getStudentData(i, j));
+                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.userDialog.getStudentData(i, index));
                             break;
                     }
 //TODO: магические числа
@@ -62,27 +62,27 @@ GUI gui = new GUI();
             } catch (IndexOutOfBoundsException ex) {
               end = gui.userDialog.getStudentsSize();
             gui.rows.add(new TableItem(table, SWT.BORDER));
-                for (int j = jSaverInCaseOfException; j < gui.userDialog.getStudentsSize(i); j++) {
-                    switch (j) {
+                for (int index = indexSaverInCaseOfException; index < gui.userDialog.getStudentsSize(i); index++) {
+                    switch (index) {
                         case 0:
-                            printToTable(gui.rows.get(rowsCounter), 0, gui.userDialog.getStudentData(i, j));
+                            printToTable(gui.rows.get(rowsCounter), 0, gui.userDialog.getStudentData(i, index));
                             break;
                         case 1:
-                            nameTranslator += gui.userDialog.getStudentData(i, j) + " ";
+                            nameTranslator += gui.userDialog.getStudentData(i, index) + " ";
                             break;
                         case 2:
-                            nameTranslator += gui.userDialog.getStudentData(i, j) + " ";
+                            nameTranslator += gui.userDialog.getStudentData(i, index) + " ";
                             break;
                         case 3:
-                            nameTranslator += gui.userDialog.getStudentData(i, j) + " ";
+                            nameTranslator += gui.userDialog.getStudentData(i, index) + " ";
                             break;
                         case 4:
                             printToTable(gui.rows.get(rowsCounter), 1, nameTranslator);
                             nameTranslator = "";
-                            printToTable(gui.rows.get(rowsCounter), j - 2, gui.userDialog.getStudentData(i, j));
+                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.userDialog.getStudentData(i, index));
                             break;
                         default:
-                            printToTable(gui.rows.get(rowsCounter), j - 2, gui.userDialog.getStudentData(i, j));
+                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.userDialog.getStudentData(i, index));
                             break;
                     }
                 }

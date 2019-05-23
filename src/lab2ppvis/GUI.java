@@ -159,13 +159,13 @@ public class GUI {
         Combo groupsList = new Combo(deleteItemShell, SWT.NONE);
         groupsList.setBounds(230, 10, 100, 30);
         Button deleteItem = new Button(deleteItemShell, SWT.NONE);
-        deleteItem.setBounds(340, 10, 80, 30);
+        deleteItem.setBounds(340, 35, 80, 30);
         deleteItem.setText("Delete items");
         Label textInfo = new Label(deleteItemShell, SWT.NONE);
-        textInfo.setBounds(330, 40, 100, 30);
+        textInfo.setBounds(330, 10, 100, 30);
         textInfo.setText(" Student surname:");
         Text studentName = new Text(deleteItemShell, SWT.BORDER);
-        studentName.setBounds(435, 40, 100, 25);
+        studentName.setBounds(435, 10, 100, 25);
 
         loadGroupList(groupsList, 4);
         deleteItem.addSelectionListener(new SelectionAdapter() {
@@ -561,12 +561,12 @@ public class GUI {
         Shell settingsDialogShell = new Shell(parentShell, SWT.APPLICATION_MODAL
                 | SWT.DIALOG_TRIM);
         Label textInfo = new Label(settingsDialogShell, SWT.NONE);
-        textInfo.setBounds(90, 0, 185, 25);
+        textInfo.setBounds(15, 0, 185, 25);
         textInfo.setText("Input number of rows on the page: ");
         Text inputRowsOnPage = new Text(settingsDialogShell, SWT.BORDER);
-        inputRowsOnPage.setBounds(85, 25, 150, 30);
+        inputRowsOnPage.setBounds(30, 25, 150, 30);
         Button setNumberOfRowsOnPage = new Button(settingsDialogShell, SWT.NONE);
-        setNumberOfRowsOnPage.setBounds(130, 60, 80, 30);
+        setNumberOfRowsOnPage.setBounds(80, 60, 80, 30);
         setNumberOfRowsOnPage.setText("Apply");
         setNumberOfRowsOnPage.addSelectionListener(widgetSelectedAdapter(event -> {
             obp.setDefaultPageSettings(table, userDialog.getStudentsSize(), Integer.parseInt(inputRowsOnPage.getText()), userDialog.getDataBase());
@@ -641,13 +641,13 @@ public class GUI {
                 | SWT.DIALOG_TRIM);
         newOrOldFileDialogShell.setText("How to save?");
         Label dialogInfo = new Label(newOrOldFileDialogShell, SWT.CENTER);
-        dialogInfo.setBounds(0, 0, 100, 30);
+        dialogInfo.setBounds(60, 0, 250, 30);
         dialogInfo.setText("Save in a new file or in the current?");
         Button newFile = new Button(newOrOldFileDialogShell, SWT.NONE);
-        newFile.setBounds(0, 100, 150, 30);
+        newFile.setBounds(0, 50, 100, 30);
         newFile.setText("New file");
         Button oldFile = new Button(newOrOldFileDialogShell, SWT.NONE | SWT.CENTER);
-        oldFile.setBounds(300, 100, 100, 30);
+        oldFile.setBounds(300, 50, 100, 30);
         oldFile.setText("Current file");
         newFile.addSelectionListener(widgetSelectedAdapter(event -> {
             try {
@@ -838,9 +838,11 @@ public class GUI {
                     return;
                 }
                 userDialog.loadTableFromFile(true, userDialog.getFileName());
+                try{
                 obp.setDefaultPageSettings(table, userDialog.getStudentsSize(), obp.getAmountOfRowsOnPage(), userDialog.getDataBase());
                 pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
                 currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
+                } catch (IndexOutOfBoundsException ex){error.setText("You have reached the end of table");}
 //TODO: настроить компонент в диалоге поиска, возможно переписать массив  в диалоге с индексов на  массив со студентами. Настроить изменение настроек в компоненте.
             }
         });
