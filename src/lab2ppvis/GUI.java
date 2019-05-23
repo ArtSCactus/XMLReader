@@ -64,7 +64,7 @@ public class GUI {
     public TableItem getRow(int index) {
         return rows.get(index);
     }
-    UserDialog userDialog = new UserDialog();
+    Controller controller = new Controller();
     private String bufferName = "";
     private static final String[][] FILTERS = {{"Таблица XML (*.xml)", "*.xml"},
     {"Файлы Excel (*.xlsx)", "*.xlsx"},
@@ -91,7 +91,7 @@ public class GUI {
         String fname = dlg.open();
         if (fname != null) //System.out.println ("" + fname);
         {
-            userDialog.setFileName(fname);
+            controller.setFileName(fname);
         }
     }
 
@@ -109,9 +109,9 @@ public class GUI {
     public void loadGroupList(Combo combo, int column) {
         boolean exist = false;
 
-        for (int i = 0; i < userDialog.getStudentsSize(); i++) {
+        for (int i = 0; i < controller.getStudentsSize(); i++) {
             exist = false;
-            String s = userDialog.getStudentData(i, column);
+            String s = controller.getStudentData(i, column);
             if (s == null || s.length() == 0) {
                 return;
             }
@@ -182,15 +182,15 @@ public class GUI {
                         WindowForm.Error(deleteItemShell, "Limits missed", "You did not inputed limit");
                         return;
                     }
-                    for (int i = 0; i < userDialog.getStudentsSize(); i++) {
-                        if (userDialog.getStudentData(i).get(2).equals(targetName)) {
-                            indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetName, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 2, 15));
+                    for (int i = 0; i < controller.getStudentsSize(); i++) {
+                        if (controller.getStudentData(i).get(2).equals(targetName)) {
+                            indexes.addAll(controller.getIndexesOfRowsWithTarget(targetName, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 2, 15));
                             elementNotFound = false;
                             break;
                         } //that's name of student
                         else {
-                            if (userDialog.getStudentData(i).get(4).equals(targetGroup)) {
-                                indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetGroup, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 4, 15));;
+                            if (controller.getStudentData(i).get(4).equals(targetGroup)) {
+                                indexes.addAll(controller.getIndexesOfRowsWithTarget(targetGroup, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 4, 15));;
                                 elementNotFound = false;
                                 break;
                             } //that's group of student
@@ -200,15 +200,15 @@ public class GUI {
                         }
                     }
                 } else {
-                    for (int i = 0; i < userDialog.getStudentsSize(); i++) {
-                        if (userDialog.getStudentData(i).get(2).equals(targetName)) {
-                            indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetName, 2));
+                    for (int i = 0; i < controller.getStudentsSize(); i++) {
+                        if (controller.getStudentData(i).get(2).equals(targetName)) {
+                            indexes.addAll(controller.getIndexesOfRowsWithTarget(targetName, 2));
                             elementNotFound = false;
                             break;
                         } //that's name of student
                         else {
-                            if (userDialog.getStudentData(i).get(4).equals(targetGroup)) {
-                                indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetGroup, 4));;
+                            if (controller.getStudentData(i).get(4).equals(targetGroup)) {
+                                indexes.addAll(controller.getIndexesOfRowsWithTarget(targetGroup, 4));;
                                 elementNotFound = false;
                                 break;
                             } //that's group of student
@@ -227,11 +227,11 @@ public class GUI {
                     return;
                 }
                 for (Integer item : indexes) {
-                    userDialog.removeStudent(userDialog.getIndexOfRowWithTarget(Integer.toString(item), 0)); //TODO: переписать так, чтобы при каждом удалении вычислялся индекс в массиве.
+                    controller.removeStudent(controller.getIndexOfRowWithTarget(Integer.toString(item), 0)); //TODO: переписать так, чтобы при каждом удалении вычислялся индекс в массиве.
                 }
-                obp.setDefaultPageSettings(table, userDialog.getStudentsSize(), obp.getAmountOfRowsOnPage(), userDialog.getDataBase());
+                obp.setDefaultPageSettings(table, controller.getStudentsSize(), obp.getAmountOfRowsOnPage(), controller.getDataBase());
                 obp.rewriteInfo(table);
-                currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
+                currentStudentsAmount.setText("Current amount of students: " + controller.getStudentsSize());
                 pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
                 WindowForm.Error(deleteItemShell, "Successfully deleted", "On your request was deleted " + indexes.size() + " elements");
             }
@@ -297,17 +297,16 @@ public class GUI {
             try {
                 addNewElement(table, studentName.getText(), studentGroup.getText(), studentSurname.getText(), studentPatronymic.getText(), comboList, dialog);
                 try {
-
-                    obp.setDefaultPageSettings(table, userDialog.getStudentsSize(), obp.getAmountOfRowsOnPage(), userDialog.getDataBase());
-                    currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
+                    obp.setDefaultPageSettings(table, controller.getStudentsSize(), obp.getAmountOfRowsOnPage(), controller.getDataBase());
+                    currentStudentsAmount.setText("Current amount of students: " + controller.getStudentsSize());
                     pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
                 } catch (IndexOutOfBoundsException ex) {
-                    currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
+                    currentStudentsAmount.setText("Current amount of students: " + controller.getStudentsSize());
                     pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
                 }
             } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
-                Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
-            }
+                Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+            }catch (NumberFormatException ex) {WindowForm.Error(shell, "Wrong data fromat", "Term value cannot be text.");}
         }
         ));
         dialog.pack();
@@ -328,7 +327,7 @@ public class GUI {
         table.setLayoutData(gridData);
         table.setBounds(0, 0, 1300, 300);
         table.setLinesVisible(true);
-        table.computeSize(userDialog.getCounter(), userDialog.getCounter());
+        table.computeSize(controller.getCounter(), controller.getCounter());
         table.setHeaderVisible(true);
         TableColumn numberOfRow = new TableColumn(table, SWT.BORDER);
         numberOfRow.setText("№");
@@ -500,15 +499,15 @@ public class GUI {
                         WindowForm.Error(findItemShell, "Limits missed", "You did not inputed limit");
                         return;
                     }
-                    for (int i = 0; i < userDialog.getStudentsSize(); i++) {
-                        if (studentName.getText().equals("")) {//userDialog.getStudentData(i).get(2).equals(targetName)) {
-                            indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetName, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 2, 15));
+                    for (int i = 0; i < controller.getStudentsSize(); i++) {
+                        if (studentName.getText().equals("")) {//controller.getStudentData(i).get(2).equals(targetName)) {
+                            indexes.addAll(controller.getIndexesOfRowsWithTarget(targetName, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 2, 15));
                             elementNotFound = false;
                             break;
                         } //that's name of student
                         else {
-                            if (userDialog.getStudentData(i).get(4).equals(targetGroup)) {
-                                indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetGroup, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 4, 15));;
+                            if (controller.getStudentData(i).get(4).equals(targetGroup)) {
+                                indexes.addAll(controller.getIndexesOfRowsWithTarget(targetGroup, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 4, 15));;
                                 elementNotFound = false;
                                 break;
                             } //that's group of student
@@ -518,15 +517,15 @@ public class GUI {
                         }
                     }
                 } else {
-                    for (int i = 0; i < userDialog.getStudentsSize(); i++) {
-                        if (userDialog.getStudentData(i).get(2).equals(targetName)) {
-                            indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetName, 2));
+                    for (int i = 0; i < controller.getStudentsSize(); i++) {
+                        if (controller.getStudentData(i).get(2).equals(targetName)) {
+                            indexes.addAll(controller.getIndexesOfRowsWithTarget(targetName, 2));
                             elementNotFound = false;
                             break;
                         } //that's name of student
                         else {
-                            if (userDialog.getStudentData(i).get(4).equals(targetGroup)) {
-                                indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetGroup, 4));;
+                            if (controller.getStudentData(i).get(4).equals(targetGroup)) {
+                                indexes.addAll(controller.getIndexesOfRowsWithTarget(targetGroup, 4));;
                                 elementNotFound = false;
                                 break;
                             } //that's group of student
@@ -545,7 +544,7 @@ public class GUI {
                     return;
                 }
                 for (int i = 0; i < indexes.size(); i++) {
-                    foundedStudents.add(userDialog.getStudentData(indexes.get(i)));
+                    foundedStudents.add(controller.getStudentData(indexes.get(i)));
                 }
                 obp.setDefaultPageSettings(table, foundedStudents.size(), obp.getAmountOfRowsOnPage(), foundedStudents);
                 pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
@@ -566,12 +565,12 @@ public class GUI {
         Text inputRowsOnPage = new Text(settingsDialogShell, SWT.BORDER);
         inputRowsOnPage.setBounds(30, 25, 150, 30);
         Button setNumberOfRowsOnPage = new Button(settingsDialogShell, SWT.NONE);
-        setNumberOfRowsOnPage.setBounds(80, 60, 80, 30);
+        setNumberOfRowsOnPage.setBounds(70, 60, 80, 30);
         setNumberOfRowsOnPage.setText("Apply");
         setNumberOfRowsOnPage.addSelectionListener(widgetSelectedAdapter(event -> {
-            obp.setDefaultPageSettings(table, userDialog.getStudentsSize(), Integer.parseInt(inputRowsOnPage.getText()), userDialog.getDataBase());
+            obp.setDefaultPageSettings(table, controller.getStudentsSize(), Integer.parseInt(inputRowsOnPage.getText()), controller.getDataBase());
             pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
-            currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
+            currentStudentsAmount.setText("Current amount of students: " + controller.getStudentsSize());
             settingsDialogShell.close();
         }
         ));
@@ -597,7 +596,7 @@ public class GUI {
     public void addNewElement(Table table, String studentName, String studentSurname, String studentPatronymic, String studentGroup, ArrayList<Combo> comboList, Shell shellForErrorWindow) throws TransformerException, IOException, SAXException, ParserConfigurationException {
         int buffer = 0;
         ArrayList<String> toDataBase = new ArrayList();
-        toDataBase.add(Integer.toString(userDialog.getStudentsSize()));
+        toDataBase.add(Integer.toString(controller.getStudentsSize()));
         toDataBase.add(studentName);
         toDataBase.add(studentSurname);
         toDataBase.add(studentPatronymic);
@@ -608,7 +607,7 @@ public class GUI {
             buffer += Integer.parseInt(comboList.get(i).getText());
         }
         toDataBase.add(Integer.toString(buffer));
-        userDialog.addStudentData(toDataBase);
+        controller.addStudentData(toDataBase);
         TableItem item = new TableItem(table, SWT.BORDER);
         rows.add(item);
         String nameCollector = "";
@@ -652,10 +651,10 @@ public class GUI {
         newFile.addSelectionListener(widgetSelectedAdapter(event -> {
             try {
                 saveFileDialog(newOrOldFileDialogShell);
-                userDialog.createFileWithRootElement(bufferName, parentShell);
-                userDialog.writeElement(userDialog.getDataBase(), bufferName, parentShell);
+                controller.createFileWithRootElement(bufferName, parentShell);
+                controller.writeElement(controller.getDataBase(), bufferName, parentShell);
             } catch (IOException | SAXException | ParserConfigurationException ex) {
-                Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
             } catch (TransformerException ex) {
                 Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -664,10 +663,12 @@ public class GUI {
         ));
         oldFile.addSelectionListener(widgetSelectedAdapter(event -> {
             try {
-                userDialog.clearFile(userDialog.getFileName(), true);
-                userDialog.writeElement(userDialog.getDataBase(), userDialog.getFileName(), parentShell);
+                try {
+                controller.clearFile(controller.getFileName(), true);
+                controller.writeElement(controller.getDataBase(), controller.getFileName(), parentShell);
+            }catch(IllegalArgumentException ex){WindowForm.Error(parentShell, "No file name or path", "You did not loaded any file.");return;}
             } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
-                Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
             }
             newOrOldFileDialogShell.close();
         }
@@ -688,8 +689,8 @@ public class GUI {
         for (int i = 0; i < amountOfRows; i++) {
             // TableItem row = new TableItem(table, SWT.BORDER);
             rows.add(new TableItem(table, SWT.BORDER));
-            for (int j = 0; j < userDialog.getStudentsSize(i); j++) {
-                printToTable(rows.get(i), j, userDialog.getStudentData(i, j));
+            for (int j = 0; j < controller.getStudentsSize(i); j++) {
+                printToTable(rows.get(i), j, controller.getStudentData(i, j));
             }
         }
     }
@@ -699,11 +700,11 @@ public class GUI {
         //на for int i=start; i<stop; i++
         table.removeAll();
         rows.clear();
-        for (int i = 0; i < userDialog.getStudentsSize(); i++) {
+        for (int i = 0; i < controller.getStudentsSize(); i++) {
             // TableItem row = new TableItem(table, SWT.BORDER);
             rows.add(new TableItem(table, SWT.BORDER));
-            for (int j = 0; j < userDialog.getStudentsSize(i); j++) {
-                printToTable(rows.get(i), j, userDialog.getStudentData(i, j));
+            for (int j = 0; j < controller.getStudentsSize(i); j++) {
+                printToTable(rows.get(i), j, controller.getStudentData(i, j));
             }
         }
     }
@@ -720,7 +721,7 @@ public class GUI {
                 }
             }
             tempArray.add(Integer.toString(tempCounter));
-            userDialog.addStudentData(tempArray);
+            controller.addStudentData(tempArray);
         }
     }
 
@@ -737,7 +738,7 @@ public class GUI {
         table.setLayoutData(gridData);
         table.setBounds(0, 0, 1300, 300);
         table.setLinesVisible(true);
-        table.computeSize(userDialog.getCounter(), userDialog.getCounter());
+        table.computeSize(controller.getCounter(), controller.getCounter());
         table.setHeaderVisible(true);
         TableColumn numberOfRow = new TableColumn(table, SWT.BORDER);
         numberOfRow.setText("№");
@@ -789,7 +790,7 @@ public class GUI {
         settings.setBounds(0, 300, 305, 30);
         settings.setText("Settings");
         Label error = new Label(MainMenu, SWT.NONE);
-        error.setBounds(620, 360, 200, 30);
+        error.setBounds(620, 365, 200, 30);
         Button saveTable = new Button(MainMenu, SWT.NONE);
         saveTable.setBounds(305, 360, 305, 30);
         saveTable.setText("Save table to file");
@@ -832,18 +833,17 @@ public class GUI {
         loadTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                userDialog.removeDataFromBase();
+                controller.removeDataFromBase();
                 chooseFileDialog(MainMenu);
-                if (userDialog.getFileName() == null) {
+                if (controller.getFileName() == null) {
                     return;
                 }
-                userDialog.loadTableFromFile(true, userDialog.getFileName());
+                controller.loadTableFromFile(true, controller.getFileName());
                 try{
-                obp.setDefaultPageSettings(table, userDialog.getStudentsSize(), obp.getAmountOfRowsOnPage(), userDialog.getDataBase());
+                obp.setDefaultPageSettings(table, controller.getStudentsSize(), obp.getAmountOfRowsOnPage(), controller.getDataBase());
                 pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
-                currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
+                currentStudentsAmount.setText("Current amount of students: " + controller.getStudentsSize());
                 } catch (IndexOutOfBoundsException ex){error.setText("You have reached the end of table");}
-//TODO: настроить компонент в диалоге поиска, возможно переписать массив  в диалоге с индексов на  массив со студентами. Настроить изменение настроек в компоненте.
             }
         });
         settings.addSelectionListener(new SelectionAdapter() {
@@ -886,14 +886,14 @@ public class GUI {
                     Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 //  printDataBaseToTable(table);
-                // userDialog.outputStudents();
+                // controller.outputStudents();
             }
         });
         addItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
                 addToTableDialog(currentStudentsAmount, pageInfo, table, obp, MainMenu);
-                currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
+                currentStudentsAmount.setText("Current amount of students: " + controller.getStudentsSize());
             }
         });
         findItem.addSelectionListener(new SelectionAdapter() {

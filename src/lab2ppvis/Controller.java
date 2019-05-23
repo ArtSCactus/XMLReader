@@ -33,7 +33,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author Asus
  */
-public class UserDialog {
+public class Controller {
         DataBase dataBase = new DataBase();
       //  GUI gui = new GUI();
        private String bufferName="";

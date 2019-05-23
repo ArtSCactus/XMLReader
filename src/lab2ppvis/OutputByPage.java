@@ -33,56 +33,55 @@ GUI gui = new GUI();
         for (int i = start; i < end + 1; i++) {
             gui.rows.add(new TableItem(table, SWT.BORDER));
             try {
-                for (int index = 0; index < gui.userDialog.getStudentsSize(i); index++) {
+                for (int index = 0; index < gui.controller.getStudentsSize(i); index++) {
                     indexSaverInCaseOfException=index;
                     switch (index) {
                         case 0:
-                            printToTable(gui.rows.get(rowsCounter), 0, gui.userDialog.getStudentData(i, index));
+                            printToTable(gui.rows.get(rowsCounter), 0, gui.controller.getStudentData(i, index));
                             break;
                         case 1:
-                            nameTranslator += gui.userDialog.getStudentData(i, index) + " ";
+                            nameTranslator += gui.controller.getStudentData(i, index) + " ";
                             break;
                         case 2:
-                            nameTranslator += gui.userDialog.getStudentData(i, index) + " ";
+                            nameTranslator += gui.controller.getStudentData(i, index) + " ";
                             break;
                         case 3:
-                            nameTranslator += gui.userDialog.getStudentData(i, index) + " ";
+                            nameTranslator += gui.controller.getStudentData(i, index) + " ";
                             break;
                         case 4:
                             printToTable(gui.rows.get(rowsCounter), 1, nameTranslator);
                             nameTranslator = "";
-                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.userDialog.getStudentData(i, index));
+                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.controller.getStudentData(i, index));
                             break;
                         default:
-                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.userDialog.getStudentData(i, index));
+                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.controller.getStudentData(i, index));
                             break;
                     }
-//TODO: магические числа
                 }
             } catch (IndexOutOfBoundsException ex) {
-              end = gui.userDialog.getStudentsSize();
+              end = gui.controller.getStudentsSize();
             gui.rows.add(new TableItem(table, SWT.BORDER));
-                for (int index = indexSaverInCaseOfException; index < gui.userDialog.getStudentsSize(i); index++) {
+                for (int index = indexSaverInCaseOfException; index < gui.controller.getStudentsSize(i); index++) {
                     switch (index) {
                         case 0:
-                            printToTable(gui.rows.get(rowsCounter), 0, gui.userDialog.getStudentData(i, index));
+                            printToTable(gui.rows.get(rowsCounter), 0, gui.controller.getStudentData(i, index));
                             break;
                         case 1:
-                            nameTranslator += gui.userDialog.getStudentData(i, index) + " ";
+                            nameTranslator += gui.controller.getStudentData(i, index) + " ";
                             break;
                         case 2:
-                            nameTranslator += gui.userDialog.getStudentData(i, index) + " ";
+                            nameTranslator += gui.controller.getStudentData(i, index) + " ";
                             break;
                         case 3:
-                            nameTranslator += gui.userDialog.getStudentData(i, index) + " ";
+                            nameTranslator += gui.controller.getStudentData(i, index) + " ";
                             break;
                         case 4:
                             printToTable(gui.rows.get(rowsCounter), 1, nameTranslator);
                             nameTranslator = "";
-                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.userDialog.getStudentData(i, index));
+                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.controller.getStudentData(i, index));
                             break;
                         default:
-                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.userDialog.getStudentData(i, index));
+                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.controller.getStudentData(i, index));
                             break;
                     }
                 }
@@ -172,10 +171,10 @@ public int getAmountOfRowsOnPage(){
         printDataBaseToTable(table, currentPageStart, currentPageEnd);
     }
     public void getDataBase(ArrayList list){
-        gui.userDialog.addDataBase(list);
+        gui.controller.addDataBase(list);
     }
     public void clearDataBase(){
-        gui.userDialog.removeDataFromBase();
+        gui.controller.removeDataFromBase();
     }
     public void goToPage(Table table, int targetPage){
         if (targetPage>currentPage){
