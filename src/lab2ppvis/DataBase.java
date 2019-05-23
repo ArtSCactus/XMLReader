@@ -12,38 +12,26 @@ import java.util.ArrayList;
  * @author Asus
  */
 public class DataBase {
-private static String fileName;
-private static ArrayList<ArrayList> students = new ArrayList();
-private static ArrayList<ArrayList> changeHistory = new ArrayList();
+private  String fileName;
+private  ArrayList<ArrayList> students = new ArrayList();
+
 public void removeDataFromBase(){
     students.clear();
 }
 public ArrayList getDataBase(){
     return students;
 }
-public static void setFileName(String newFileName){
+public void addDataBase(ArrayList incommingList){
+    students.addAll(incommingList);
+}
+public  void setFileName(String newFileName){
     fileName=newFileName;
 }
-public static String getFileName(){
+public  String getFileName(){
     return fileName;
-}
-public void addToChangeHitory(ArrayList<String> incommingList){
-changeHistory.add(incommingList);
 }
 public void removeStudent(int indexOfStudent){
     students.remove(indexOfStudent);
-}
-public ArrayList getChangeHistory(int indexOfStudent){
-    return changeHistory.get(indexOfStudent);
-}
-/*public String getChangeHistory(int indexOfStudent, int columnIndex){
-      return (String) changeHistory.get(indexOfStudent).get(columnIndex); //java.lang.String cannot be cast to java.util.ArrayList
-}*/
-public int getChangeHistorySize(){
-      return changeHistory.size();
-}
-public int getChangeHistorySize(int indexOfStudent){
-      return changeHistory.get(indexOfStudent).size();
 }
 public int getStudentsSize(){
    return students.size();
@@ -51,7 +39,7 @@ public int getStudentsSize(){
 public int getStudentsSize(int indexOfElement){
    return students.get(indexOfElement).size();
 }
-public static void addStudentData(ArrayList incomingList){
+public void addStudentData(ArrayList incomingList){
 students.add(incomingList); 
 }
 public String getStudentData(int studentIndex, int dataIndex){
@@ -99,8 +87,8 @@ public boolean isExist(String target, int indexOfColumn){
 }
 public void outputStudents(){
     System.out.println("--------DataBase--------");
-for (int i=0; i<students.size(); i++)
-    for (int j=0; j<students.get(i).size(); j++){
+       for (int i=0; i<students.size(); i++)
+       for (int j=0; j<students.get(i).size(); j++){
        if(j==0) System.out.println("№: "+students.get(i).get(j));
        if(j==1) System.out.println("name: "+students.get(i).get(j));
        if (j==2) System.out.println("group: "+students.get(i).get(j));

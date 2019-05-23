@@ -10,11 +10,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -25,170 +22,562 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
  * @author Asus
  */
 public class GUI {
+
     //private 
-
     public ArrayList<TableItem> rows = new ArrayList();
-    //public ArrayList<Integer> pages = new ArrayList()
-    private static int numberOfPages=0;
-    private static int currentPageStart=0;
-    private static int numberOfRowsOnPage = 10;
-    private static int currentPageEnd = numberOfRowsOnPage;
-    private static int currentPage = 0;
-    Document documentTransfer;
-    DataBase database = new DataBase();
 
-    public Document getDocument() {
-        return documentTransfer;
-    }
-    public static void setNumberOfRowsOnPage(int newNumberOfRowsOnPage) {
-        numberOfRowsOnPage = newNumberOfRowsOnPage;
-        currentPageStart = 0;
-        currentPageEnd=newNumberOfRowsOnPage;
+    public ArrayList getRows() {
+        return rows;
     }
 
-    public static void printToTable(TableItem nameOfItem, int index, String information) {
-        nameOfItem.setText(index, information);
+    public void addRow(TableItem item) {
+        rows.add(item);
     }
 
-    public static void getAmountOfPages(int amountOfStudents, int rowsOnPage) {
-        int rowsCounter = 0;
-        for (int i = 0; i < amountOfStudents; i++) {
-            if (rowsCounter == rowsOnPage - 1) {
-                numberOfPages++;
-                rowsCounter = 0;
-            } else {
-                rowsCounter++;
-            }
+    public void removeRow(int index) {
+        rows.remove(index);
+    }
+
+    public TableItem getRow(int index) {
+        return rows.get(index);
+    }
+    UserDialog userDialog = new UserDialog();
+    private String bufferName = "";
+    private static final String[][] FILTERS = {{"Таблица XML (*.xml)", "*.xml"},
+    {"Файлы Excel (*.xlsx)", "*.xlsx"},
+    {"Файлы Adobe (*.pdf)", "*.pdf"},
+    {"Файлы Word (*.docx)", "*.docx"},
+    {"Все файлы (*.*)", "*.*"}};
+
+    private void setFilters(FileDialog dialog) {
+        String[] names = new String[FILTERS.length];
+        String[] exts = new String[FILTERS.length];
+        for (int i = 0; i < FILTERS.length; i++) {
+            names[i] = FILTERS[i][0];
+            exts[i] = FILTERS[i][1];
         }
-        if (rowsCounter > 0) {
-            numberOfPages++;
-        }
-        System.out.println("Inputed number of rows: " + numberOfRowsOnPage);
-        System.out.println("Amount of pages: " + numberOfPages);
-        System.out.println("Amount of students: " + amountOfStudents);
+        // Определение фильтра диалога FileDialog
+        dialog.setFilterNames(names);
+        dialog.setFilterExtensions(exts);
     }
+    public static int arrayListCounter = 0;
 
-    public void printChangeHistoryToTable(Table table, ArrayList<TableItem> arrayOfRows) {
-        //table.clearAll();
-        DataBase db = new DataBase();
-        table.removeAll();
-        arrayOfRows.clear();
-        for (int i = 0; i < db.getChangeHistorySize(); i++) {
-            ArrayList<String> toTable = new ArrayList();
-            toTable.addAll(db.getChangeHistory(i));
-            arrayOfRows.add(new TableItem(table, SWT.BORDER));
-            for (int j = 0; j < db.getChangeHistorySize(i); j++) {
-                printToTable(arrayOfRows.get(i), j, toTable.get(j));
-            }
+    public void chooseFileDialog(Shell parentShell) {
+        FileDialog dlg = new FileDialog(parentShell, SWT.OPEN);
+        setFilters(dlg);
+        String fname = dlg.open();
+        if (fname != null) //System.out.println ("" + fname);
+        {
+            userDialog.setFileName(fname);
         }
     }
 
-    public void printDataBaseToTable(Table table, int start, int end) {
-        table.removeAll();
-        rows.clear();
-        int rowsCounter = 0;
-        
-        for (int i = start; i < end + 1; i++) {
-            rows.add(new TableItem(table, SWT.BORDER));
-            try{
-            for (int j = 0; j < database.getStudentsSize(i); j++) {
-                printToTable(rows.get(rowsCounter), j, database.getStudentData(i, j));
-            }
-            } catch(IndexOutOfBoundsException ex){
-                end =database.getStudentsSize();
-             for (int h = start; h < end + 1; h++) { rows.add(new TableItem(table, SWT.BORDER));
-            for (int j = 0; j < database.getStudentsSize(h); j++) {
-                printToTable(rows.get(rowsCounter), j, database.getStudentData(i, j));
-            }}
-            }
-            rowsCounter++;
+    public void saveFileDialog(Shell parentShell) {
+        // Диалоговое окно сохранения файла
+        FileDialog dlg = new FileDialog(parentShell, SWT.SAVE);
+        setFilters(dlg);
+        String fname = dlg.open();
+        if (fname != null) {
+            bufferName = fname;
         }
+        System.out.println("" + fname);
     }
 
-    public void printDataBaseToTable(Table table, int amountOfRows) {
-        //table.clearAll();
-        //на for int i=start; i<stop; i++
-        table.removeAll();
-        rows.clear();
-        for (int i = 0; i < amountOfRows; i++) {
-            // TableItem row = new TableItem(table, SWT.BORDER);
-            rows.add(new TableItem(table, SWT.BORDER));
-            for (int j = 0; j < database.getStudentsSize(i); j++) {
-                printToTable(rows.get(i), j, database.getStudentData(i, j));
-            }
-        }
-    }
+    public void loadGroupList(Combo combo, int column) {
+        boolean exist = false;
 
-    public void printDataBaseToTable(Table table) {
-        //table.clearAll();
-        //на for int i=start; i<stop; i++
-        table.removeAll();
-        rows.clear();
-        for (int i = 0; i < database.getStudentsSize(); i++) {
-            // TableItem row = new TableItem(table, SWT.BORDER);
-            rows.add(new TableItem(table, SWT.BORDER));
-            for (int j = 0; j < database.getStudentsSize(i); j++) {
-                printToTable(rows.get(i), j, database.getStudentData(i, j));
+        for (int i = 0; i < userDialog.getStudentsSize(); i++) {
+            exist = false;
+            String s = userDialog.getStudentData(i, column);
+            if (s == null || s.length() == 0) {
+                return;
             }
-        }
-    }
-
-    public void fromTableToDataBase() {
-        int tempCounter = 0;
-        for (int i = 0; i < rows.size(); i++) {
-            ArrayList<String> tempArray = new ArrayList();
-            tempCounter = 0;
-            for (int j = 0; j < 14; j++) {
-                tempArray.add(rows.get(i).getText(j));
-                if (j > 2 & j < 13) {
-                    tempCounter += Integer.parseInt(rows.get(i).getText(j));
+            String[] items = combo.getItems();
+            for (String item : items) {
+                if (item.equals(s) == true) {
+                    // WindowForm.Error(shell,"Error 001", "Such element already exists");
+                    exist = true;
+                    break;
                 }
             }
-            tempArray.add(Integer.toString(tempCounter));
-            DataBase.addStudentData(tempArray);
+            if (exist == false) {
+                combo.add(s);
+            }
         }
     }
 
-    /*  public void saveTableToFile(Document document, String fileNameOrPath,Shell shellForErrorWindow) throws TransformerException{
-       if (fileNameOrPath==null) {WindowForm.Error(shellForErrorWindow, "No path", "You did not inputed any file name or path."); return;}
-        File file = new File(fileNameOrPath);
-Transformer transformer = TransformerFactory.newInstance().newTransformer();
-transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-transformer.transform(new DOMSource(document), new StreamResult(file));
-   }*/
-    public void createFileWithRootElement(String fileName, Shell shellForErrorWindow) throws TransformerException, ParserConfigurationException, SAXException, IOException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        Document doc = factory.newDocumentBuilder().newDocument();
-        Element root = doc.createElement("students");
-        doc.appendChild(root);
-        File file = new File(fileName);
+    public void changeTableDialog(Table table, Label pageInfo, Label currentStudentsAmount, OutputByPage obp, Shell parentShell) throws ParserConfigurationException {
+        Shell deleteItemShell = new Shell(parentShell, SWT.APPLICATION_MODAL
+                | SWT.DIALOG_TRIM);
+        GridData gridData = new GridData();
+        gridData.horizontalSpan = 2;
+        gridData.horizontalAlignment = SWT.FILL;
+        gridData.grabExcessHorizontalSpace = true;
+        gridData.verticalAlignment = SWT.FILL;
+        gridData.grabExcessVerticalSpace = true;
+        Label highLimit = new Label(deleteItemShell, SWT.NONE);
+        highLimit.setBounds(0, 10, 80, 25);
+        highLimit.setText("Hight limit: ");
+        Label lowLimit = new Label(deleteItemShell, SWT.NONE);
+        lowLimit.setBounds(0, 40, 80, 25);
+        lowLimit.setText("Down limit: ");
+        Text upLimit = new Text(deleteItemShell, SWT.BORDER);
+        upLimit.setBounds(80, 10, 50, 25);
+        Text downLimit = new Text(deleteItemShell, SWT.BORDER);
+        downLimit.setBounds(80, 40, 50, 25);
+        Label comboInfo = new Label(deleteItemShell, SWT.NONE);
+        comboInfo.setBounds(150, 10, 80, 30);
+        comboInfo.setText("List of groups: ");
+        Label checkInfo = new Label(deleteItemShell, SWT.NONE);
+        checkInfo.setBounds(150, 40, 165, 30);
+        checkInfo.setText("Use amount of work in search: ");
+        Button useAmountOfWorkInSearch = new Button(deleteItemShell, SWT.CHECK);
+        useAmountOfWorkInSearch.setBounds(315, 39, 17, 17);
+        Combo groupsList = new Combo(deleteItemShell, SWT.NONE);
+        groupsList.setBounds(230, 10, 100, 30);
+        Button deleteItem = new Button(deleteItemShell, SWT.NONE);
+        deleteItem.setBounds(340, 10, 80, 30);
+        deleteItem.setText("Delete items");
+        Label textInfo = new Label(deleteItemShell, SWT.NONE);
+        textInfo.setBounds(330, 40, 100, 30);
+        textInfo.setText(" Student surname:");
+        Text studentName = new Text(deleteItemShell, SWT.BORDER);
+        studentName.setBounds(435, 40, 100, 25);
 
-        Transformer transformer = TransformerFactory.newInstance().newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        transformer.transform(new DOMSource(doc), new StreamResult(file));
-        // saveTableToFile(doc,fileName, shellForErrorWindow);
+        loadGroupList(groupsList, 4);
+        deleteItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                boolean elementNotFound = false;
+                table.removeAll();
+                rows.clear();
+                String targetGroup = groupsList.getText();
+                String targetName = studentName.getText();
+                ArrayList<Integer> indexes = new ArrayList();
+                if (useAmountOfWorkInSearch.getSelection()) {
+                    if (downLimit.getText().equals("") || upLimit.getText().equals("")) {
+                        WindowForm.Error(deleteItemShell, "Limits missed", "You did not inputed limit");
+                        return;
+                    }
+                    for (int i = 0; i < userDialog.getStudentsSize(); i++) {
+                        if (userDialog.getStudentData(i).get(2).equals(targetName)) {
+                            indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetName, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 2, 15));
+                            elementNotFound = false;
+                            break;
+                        } //that's name of student
+                        else {
+                            if (userDialog.getStudentData(i).get(4).equals(targetGroup)) {
+                                indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetGroup, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 4, 15));;
+                                elementNotFound = false;
+                                break;
+                            } //that's group of student
+                            else {
+                                elementNotFound = true;
+                            }
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < userDialog.getStudentsSize(); i++) {
+                        if (userDialog.getStudentData(i).get(2).equals(targetName)) {
+                            indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetName, 2));
+                            elementNotFound = false;
+                            break;
+                        } //that's name of student
+                        else {
+                            if (userDialog.getStudentData(i).get(4).equals(targetGroup)) {
+                                indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetGroup, 4));;
+                                elementNotFound = false;
+                                break;
+                            } //that's group of student
+                            else {
+                                elementNotFound = true;
+                            }
+                        }
+                    }
+                }
+                if (elementNotFound == true) {
+                    WindowForm.Error(deleteItemShell, "Not exist", "I didn't found any name or group number like that. :(");
+                    return;
+                }
+                if (indexes.isEmpty()) {
+                    WindowForm.Error(deleteItemShell, "Not exist", "I didn't found any name or group number like that. :(");
+                    return;
+                }
+                for (Integer item : indexes) {
+                    userDialog.removeStudent(userDialog.getIndexOfRowWithTarget(Integer.toString(item), 0)); //TODO: переписать так, чтобы при каждом удалении вычислялся индекс в массиве.
+                }
+                obp.setDefaultPageSettings(table, userDialog.getStudentsSize(), obp.getAmountOfRowsOnPage(), userDialog.getDataBase());
+                obp.rewriteInfo(table);
+                currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
+                pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                WindowForm.Error(deleteItemShell, "Successfully deleted", "On your request was deleted " + indexes.size() + " elements");
+            }
+        });
+        deleteItemShell.pack();
+        deleteItemShell.open();
+    }
+
+    public void addToTableDialog(Label currentStudentsAmount, Label pageInfo, Table table, OutputByPage obp, Shell shell) {
+        //DataBase model = new DataBase();
+        ArrayList<Label> labelList = new ArrayList();
+        ArrayList<Combo> comboList = new ArrayList();
+        String[] numbers = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};//TODO: не забудь потом проверить на конвертацию.     
+        Shell dialog = new Shell(shell, SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
+        dialog.setLayout(new GridLayout(2, false));
+        Composite namePart = new Composite(dialog, SWT.NONE);
+        Label labelName = new Label(namePart, SWT.NONE);
+        labelName.setText("Name:");
+        labelName.setBounds(0, 0, 35, 50);
+        Text studentName = new Text(namePart, SWT.BORDER);
+        studentName.setBounds(50, 0, 50, 25);
+        Composite groupPart = new Composite(dialog, SWT.NONE);
+        Label labelGroup = new Label(groupPart, SWT.NONE);
+        labelGroup.setText("Surname:");
+        labelGroup.setBounds(0, 0, 65, 50);
+        Text studentGroup = new Text(groupPart, SWT.BORDER);
+        studentGroup.setBounds(65, 0, 50, 25);
+        Composite surnamePart = new Composite(dialog, SWT.NONE);
+        Label labelSurname = new Label(surnamePart, SWT.NONE);
+        labelSurname.setText("Patronymic:");
+        labelSurname.setBounds(0, 0, 65, 50);
+        Text studentSurname = new Text(surnamePart, SWT.BORDER);
+        studentSurname.setBounds(65, 0, 50, 25);
+        Composite patronymicPart = new Composite(dialog, SWT.NONE);
+        Label labelPatronymic = new Label(patronymicPart, SWT.NONE);
+        labelPatronymic.setText("Group:");
+        labelPatronymic.setBounds(0, 0, 35, 50);
+        Text studentPatronymic = new Text(patronymicPart, SWT.BORDER);
+        studentPatronymic.setBounds(50, 0, 50, 25);
+        for (int i = 0; i < 10; i++) {
+            Composite semUIPart = new Composite(dialog, SWT.NONE);
+            Label semLabel = new Label(semUIPart, SWT.NONE);
+            Combo semCombo = new Combo(semUIPart, SWT.DROP_DOWN);
+            labelList.add(semLabel);
+            comboList.add(semCombo);
+            semLabel.setBounds(0, 0, 40, 50);
+            semCombo.setBounds(45, 0, 40, 50);
+            semCombo.setItems(numbers);
+            semCombo.select(0);
+            semLabel.setText("Term " + Integer.toString(i + 1));
+        }
+        Composite UI = new Composite(dialog, SWT.BORDER);
+        UI.setBounds(0, 150, 305, 30);
+        //две колонки name и group с Text, остальное combobox. Потом это всё считать и в разослать по функциям на таблицу.
+        UI.setLayout(new RowLayout(SWT.HORIZONTAL));
+        Button inputToTable = new Button(UI, SWT.NONE);
+        inputToTable.setText("Add to table");
+        inputToTable.addSelectionListener(widgetSelectedAdapter(event -> {
+            if (studentName.getText().equals("")) {
+                WindowForm.Error(dialog, "Wrong info", "One of text fields are empty");
+                return;
+            }
+            try {
+                addNewElement(table, studentName.getText(), studentGroup.getText(), studentSurname.getText(), studentPatronymic.getText(), comboList, dialog);
+                try {
+
+                    obp.setDefaultPageSettings(table, userDialog.getStudentsSize(), obp.getAmountOfRowsOnPage(), userDialog.getDataBase());
+                    currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                } catch (IndexOutOfBoundsException ex) {
+                    currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                }
+            } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
+                Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        ));
+        dialog.pack();
+        dialog.open();
+    }
+
+    public void loadFindItemDialog(Shell parentShell) {
+        OutputByPage obp = new OutputByPage();
+        Shell findItemShell = new Shell(parentShell, SWT.APPLICATION_MODAL
+                | SWT.DIALOG_TRIM);
+        Table table = new Table(findItemShell, SWT.READ_ONLY);
+        GridData gridData = new GridData();
+        gridData.horizontalSpan = 2;
+        gridData.horizontalAlignment = SWT.FILL;
+        gridData.grabExcessHorizontalSpace = true;
+        gridData.verticalAlignment = SWT.FILL;
+        gridData.grabExcessVerticalSpace = true;
+        table.setLayoutData(gridData);
+        table.setBounds(0, 0, 1300, 300);
+        table.setLinesVisible(true);
+        table.computeSize(userDialog.getCounter(), userDialog.getCounter());
+        table.setHeaderVisible(true);
+        TableColumn numberOfRow = new TableColumn(table, SWT.BORDER);
+        numberOfRow.setText("№");
+        numberOfRow.setWidth(90);
+        TableColumn studentNSF = new TableColumn(table, SWT.BORDER);
+        studentNSF.setText("ФИО студента");
+        studentNSF.setWidth(170);
+        table.setHeaderVisible(true);
+        TableColumn group = new TableColumn(table, SWT.BORDER);
+        group.setText("Группа");
+        group.setWidth(100);
+        table.setHeaderVisible(true);
+        ArrayList<TableColumn> columns = new ArrayList();
+        ArrayList<TableItem> rows = new ArrayList();
+        for (int i = 0; i < 10; i++) {
+            TableColumn SocialWork = new TableColumn(table, SWT.BORDER);
+            SocialWork.setText("Семестр " + (i + 1));
+            SocialWork.setWidth(90);
+            columns.add(SocialWork);
+        }
+        Label highLimit = new Label(findItemShell, SWT.NONE);
+        highLimit.setBounds(0, 300, 80, 25);
+        highLimit.setText("Hight limit: ");
+        Label lowLimit = new Label(findItemShell, SWT.NONE);
+        lowLimit.setBounds(0, 330, 80, 25);
+        lowLimit.setText("Down limit: ");
+        Text upLimit = new Text(findItemShell, SWT.BORDER);
+        upLimit.setBounds(80, 300, 50, 25);
+        Text downLimit = new Text(findItemShell, SWT.BORDER);
+        downLimit.setBounds(80, 330, 50, 25);
+        Label comboInfo = new Label(findItemShell, SWT.NONE);
+        comboInfo.setBounds(150, 300, 80, 30);
+        comboInfo.setText("List of groups: ");
+        Label checkInfo = new Label(findItemShell, SWT.NONE);
+        checkInfo.setBounds(150, 330, 165, 30);
+        checkInfo.setText("Use amount of work in search: ");
+        Button useAmountOfWorkInSearch = new Button(findItemShell, SWT.CHECK);
+        useAmountOfWorkInSearch.setBounds(315, 329, 17, 17);
+        Combo groupsList = new Combo(findItemShell, SWT.NONE);
+        groupsList.setBounds(230, 300, 100, 30);
+        Label textInfo = new Label(findItemShell, SWT.NONE);
+        textInfo.setBounds(335, 300, 100, 30);
+        textInfo.setText("Student surname:");
+        Text studentName = new Text(findItemShell, SWT.BORDER);
+        studentName.setBounds(435, 300, 100, 25);
+        comboInfo.setBounds(150, 300, 80, 30);
+        comboInfo.setText("List of groups: ");
+        Button findItems = new Button(findItemShell, SWT.NONE);
+        //findItems.setBounds(335, 330, 80, 30);
+        findItems.setBounds(305, 360, 305, 30);
+        findItems.setText("Find items");
+        Button back = new Button(findItemShell, SWT.NONE);
+        back.setBounds(615, 300, 30, 30);
+        back.setText("<");
+        Label pageInfo = new Label(findItemShell, SWT.NONE);
+        pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+        pageInfo.setBounds(670, 300, 60, 30);
+        Button forward = new Button(findItemShell, SWT.NONE);
+        forward.setBounds(740, 300, 30, 30);
+        forward.setText(">");
+        Button goToLastPage = new Button(findItemShell, SWT.NONE);
+        goToLastPage.setBounds(730, 335, 60, 30);
+        goToLastPage.setText("Last page");
+        Button goToFirstPage = new Button(findItemShell, SWT.NONE);
+        goToFirstPage.setBounds(615, 335, 60, 30);
+        goToFirstPage.setText("First page");
+        Label error = new Label(findItemShell, SWT.NONE);
+        error.setBounds(620, 360, 200, 30);
+        Button settingsOfPage = new Button(findItemShell, SWT.NONE);
+        settingsOfPage.setBounds(0, 360, 305, 30);
+        settingsOfPage.setText("Settings");
+        loadGroupList(groupsList, 4);
+        ArrayList<ArrayList<String>> foundedStudents = new ArrayList();
+        Label currentStudentsAmount = new Label(findItemShell, SWT.NONE);
+        currentStudentsAmount.setBounds(780, 300, 200, 30);
+        pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+        pageInfo.setBounds(670, 300, 60, 30);
+
+        settingsOfPage.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                Shell settingsDialogShell = new Shell(parentShell, SWT.APPLICATION_MODAL
+                        | SWT.DIALOG_TRIM);
+                Label textInfo = new Label(settingsDialogShell, SWT.NONE);
+                textInfo.setBounds(90, 0, 185, 25);
+                textInfo.setText("Input number of rows on the page: ");
+                Text inputRowsOnPage = new Text(settingsDialogShell, SWT.BORDER);
+                inputRowsOnPage.setBounds(85, 25, 150, 30);
+                Button setNumberOfRowsOnPage = new Button(settingsDialogShell, SWT.NONE);
+                setNumberOfRowsOnPage.setBounds(130, 60, 80, 30);
+                setNumberOfRowsOnPage.setText("Apply");
+                setNumberOfRowsOnPage.addSelectionListener(widgetSelectedAdapter(event -> {
+                    settingsDialogShell.close();
+                }
+                ));
+                settingsDialogShell.pack();
+                settingsDialogShell.open();
+                pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+            }
+        });
+        back.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                error.setText("");
+                try {
+                    obp.previousPage(table);
+                } catch (IndexOutOfBoundsException ex) {
+                    error.setText("You have reached the end of table");
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                }
+                pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+            }
+        });
+        forward.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                /*  if (numberOfPages==0){WindowForm.Error(findItemShell, "No table", "Table are not loaded"); return;}
+                if (currentPage == numberOfPages - 1) {
+                    error.setText("You have reached the end of file");
+                    return;
+                }*/
+                error.setText("");
+                try {
+                    obp.nextPage(table);
+                } catch (IndexOutOfBoundsException ex) {
+                    error.setText("You have reached the end of table");
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                }
+                pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+
+            }
+        });
+        goToFirstPage.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                try {
+                    obp.goToPage(table, 1);
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                } catch (IndexOutOfBoundsException ex) {
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                    error.setText("You have reached the end of table");
+                }
+            }
+        });
+        goToLastPage.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                try {
+                    obp.goToPage(table, obp.getAmountOfPages());
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                } catch (IndexOutOfBoundsException ex) {
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                    error.setText("You have reached the end of table");
+                }
+            }
+        });
+        findItems.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                foundedStudents.clear();
+                boolean elementNotFound = false;
+                table.removeAll();
+                rows.clear();
+                String targetGroup = groupsList.getText();
+                String targetName = studentName.getText();
+                ArrayList<Integer> indexes = new ArrayList();
+                if (useAmountOfWorkInSearch.getSelection()) {
+                    if (downLimit.getText().equals("") || upLimit.getText().equals("")) {
+                        WindowForm.Error(findItemShell, "Limits missed", "You did not inputed limit");
+                        return;
+                    }
+                    for (int i = 0; i < userDialog.getStudentsSize(); i++) {
+                        if (studentName.getText().equals("")) {//userDialog.getStudentData(i).get(2).equals(targetName)) {
+                            indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetName, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 2, 15));
+                            elementNotFound = false;
+                            break;
+                        } //that's name of student
+                        else {
+                            if (userDialog.getStudentData(i).get(4).equals(targetGroup)) {
+                                indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetGroup, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 4, 15));;
+                                elementNotFound = false;
+                                break;
+                            } //that's group of student
+                            else {
+                                elementNotFound = true;
+                            }
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < userDialog.getStudentsSize(); i++) {
+                        if (userDialog.getStudentData(i).get(2).equals(targetName)) {
+                            indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetName, 2));
+                            elementNotFound = false;
+                            break;
+                        } //that's name of student
+                        else {
+                            if (userDialog.getStudentData(i).get(4).equals(targetGroup)) {
+                                indexes.addAll(userDialog.getIndexesOfRowsWithTarget(targetGroup, 4));;
+                                elementNotFound = false;
+                                break;
+                            } //that's group of student
+                            else {
+                                elementNotFound = true;
+                            }
+                        }
+                    }
+                }
+                if (elementNotFound == true) {
+                    WindowForm.Error(findItemShell, "Not exist", "I didn't found any name or group number like that. :(");
+                    return;
+                }
+                if (indexes.isEmpty()) {
+                    WindowForm.Error(findItemShell, "Not exist", "I didn't found any name or group number like that. :(");
+                    return;
+                }
+                for (int i = 0; i < indexes.size(); i++) {
+                    foundedStudents.add(userDialog.getStudentData(indexes.get(i)));
+                }
+                obp.setDefaultPageSettings(table, foundedStudents.size(), obp.getAmountOfRowsOnPage(), foundedStudents);
+                pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                currentStudentsAmount.setText("Current amount of students: " + foundedStudents.size());
+            }
+
+        });
+        findItemShell.pack();
+        findItemShell.open();
+    }
+
+    public void settingsDialog(Label pageInfo, Label currentStudentsAmount, OutputByPage obp, Table table, Shell parentShell) {
+        Shell settingsDialogShell = new Shell(parentShell, SWT.APPLICATION_MODAL
+                | SWT.DIALOG_TRIM);
+        Label textInfo = new Label(settingsDialogShell, SWT.NONE);
+        textInfo.setBounds(90, 0, 185, 25);
+        textInfo.setText("Input number of rows on the page: ");
+        Text inputRowsOnPage = new Text(settingsDialogShell, SWT.BORDER);
+        inputRowsOnPage.setBounds(85, 25, 150, 30);
+        Button setNumberOfRowsOnPage = new Button(settingsDialogShell, SWT.NONE);
+        setNumberOfRowsOnPage.setBounds(130, 60, 80, 30);
+        setNumberOfRowsOnPage.setText("Apply");
+        setNumberOfRowsOnPage.addSelectionListener(widgetSelectedAdapter(event -> {
+            obp.setDefaultPageSettings(table, userDialog.getStudentsSize(), Integer.parseInt(inputRowsOnPage.getText()), userDialog.getDataBase());
+            pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+            currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
+            settingsDialogShell.close();
+        }
+        ));
+        settingsDialogShell.pack();
+        settingsDialogShell.open();
+
     }
 
     public void createRootElement(String fileName, Shell shellForErrorWindow) throws TransformerException, ParserConfigurationException, SAXException, IOException {
@@ -205,50 +594,13 @@ transformer.transform(new DOMSource(document), new StreamResult(file));
         // saveTableToFile(doc,fileName, shellForErrorWindow);
     }
 
-    public void writeElement(ArrayList<ArrayList<String>> dataBase, String fileName, Shell shellForErrorWindow) throws TransformerException, IOException, SAXException, ParserConfigurationException {
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        Document document = documentBuilder.parse(DataBase.getFileName());
-        // Document doc = documentBuilderFactory.newDocumentBuilder().newDocument();
-        // Element root = doc.createElement("students");
-        //doc.appendChild(root);
-        //File file = new File(fileName);
-        //Корневой элемент
-        Node root = document.getFirstChild();
-        for (int i = 0; i < database.getStudentsSize(); i++) {
-            // for (int j=0; j<database.getStudentsSize(i); j++){
-            Element student = document.createElement("student");
-            root.appendChild(student);
-            student.setAttribute("name", dataBase.get(i).get(1));
-            student.setAttribute("group", dataBase.get(i).get(2));
-            for (int k = 0; k < 10; k++) {
-                Element sem = document.createElement("sem");
-                sem.appendChild(document.createTextNode(dataBase.get(i).get(k + 3)));
-                sem.setAttribute("id", Integer.toString(k));
-                student.appendChild(sem);
-            }
-        }
-        //Теперь запишем контент в XML файл
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        DOMSource domSource = new DOMSource(document);
-        StreamResult streamResult = new StreamResult(new File(fileName));
-
-        transformer.transform(domSource, streamResult);
-
-        System.out.println("Файл сохранен!");
-    }
-
-    public void addNewElement(Table table, String studentName, String studentGroup, ArrayList<Combo> comboList, Shell shellForErrorWindow) throws TransformerException, IOException, SAXException, ParserConfigurationException {
-        DataBase db = new DataBase();
+    public void addNewElement(Table table, String studentName, String studentSurname, String studentPatronymic, String studentGroup, ArrayList<Combo> comboList, Shell shellForErrorWindow) throws TransformerException, IOException, SAXException, ParserConfigurationException {
         int buffer = 0;
-        /*DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder documentBuilder  = documentBuilderFactory.newDocumentBuilder();
-            Document document = documentBuilder.parse(DataBase.getFileName());*/
-
         ArrayList<String> toDataBase = new ArrayList();
-        toDataBase.add(Integer.toString(db.getStudentsSize()));
+        toDataBase.add(Integer.toString(userDialog.getStudentsSize()));
         toDataBase.add(studentName);
+        toDataBase.add(studentSurname);
+        toDataBase.add(studentPatronymic);
         toDataBase.add(studentGroup);
 
         for (int i = 0; i < 10; i++) {
@@ -256,166 +608,124 @@ transformer.transform(new DOMSource(document), new StreamResult(file));
             buffer += Integer.parseInt(comboList.get(i).getText());
         }
         toDataBase.add(Integer.toString(buffer));
-        DataBase.addStudentData(toDataBase);
+        userDialog.addStudentData(toDataBase);
         TableItem item = new TableItem(table, SWT.BORDER);
         rows.add(item);
-        for (int i = 0; i < 13; i++) {
-            printToTable(item, i, toDataBase.get(i));
-        }
-    }
-
-    public void deleteElement(int indexOfStudent, Shell parentShell) throws TransformerException, IOException, SAXException, ParserConfigurationException {
-        DataBase db = new DataBase();
-        // db.addToChangeHitory(db.getStudentData(indexOfStudent));
-        db.removeStudent(indexOfStudent);
-        //  saveTableToFile(document, "data/iblog.xml", parentShell);
-    }
-
-    public void clearFile(String fileName, boolean onlyContentOfStudents) throws TransformerException, IOException, SAXException, ParserConfigurationException {
-        DataBase db = new DataBase();
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        Document document = documentBuilder.parse(fileName);
-
-        Node root = document.getElementsByTagName("students").item(0);
-        // onlyContentOfStudents=true? document.removeChild(root) : root.removeChild(root.getFirstChild());
-        if (onlyContentOfStudents == true) {
-            NodeList nodelist = root.getChildNodes();
-            for (int i = 0; i < nodelist.getLength(); i++) {
-                root.removeChild(nodelist.item(i));
+        String nameCollector = "";
+        for (int i = 0; i < 15; i++) {
+            switch (i) {
+                case 0:
+                    printToTable(item, i, toDataBase.get(i));
+                    break;
+                case 1:
+                    nameCollector += toDataBase.get(i) + " ";
+                    break;
+                case 2:
+                    nameCollector += toDataBase.get(i) + " ";
+                    break;
+                case 3:
+                    nameCollector += toDataBase.get(i) + "";
+                    printToTable(item, 1, nameCollector);
+                    nameCollector = "";
+                    break;
+                default:
+                    printToTable(item, i - 2, toDataBase.get(i));
+                    break;
             }
-        } else {
-            document.removeChild(root);
-        }
-        // db.addToChangeHitory(db.getStudentData(indexOfStudent));
-        // db.removeStudent(indexOfStudent);
-        //  saveTableToFile(document, "data/iblog.xml", parentShell);
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        DOMSource domSource = new DOMSource(document);
-        StreamResult streamResult = new StreamResult(new File(fileName));
 
-        transformer.transform(domSource, streamResult);
+        }
     }
 
-    public void loadTableFromFile(boolean debugMode, String fileLocation, Table table) {
-        try {
-            DataBase db = new DataBase();
-            SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-            SAXParser saxParser = saxParserFactory.newSAXParser();
-            //db.removeDataFromBase();
-            DefaultHandler defaultHandler = new DefaultHandler() {
-                DataBase db = new DataBase();
-                boolean studentReadingStarted = false;
-                boolean bStudent = false;
-                boolean bSem = false;
-                int tempAttrStorage = 0;
-                int buffer = 0;
-                int columnCounter = 0;
-                int rowCounter = 0;
-                ArrayList<String> newStudentData = new ArrayList();
+    public void newOrOldFile(Shell parentShell) throws SAXException, IOException, ParserConfigurationException {
+        Shell newOrOldFileDialogShell = new Shell(parentShell, SWT.APPLICATION_MODAL
+                | SWT.DIALOG_TRIM);
+        newOrOldFileDialogShell.setText("How to save?");
+        Label dialogInfo = new Label(newOrOldFileDialogShell, SWT.CENTER);
+        dialogInfo.setBounds(0, 0, 100, 30);
+        dialogInfo.setText("Save in a new file or in the current?");
+        Button newFile = new Button(newOrOldFileDialogShell, SWT.NONE);
+        newFile.setBounds(0, 100, 150, 30);
+        newFile.setText("New file");
+        Button oldFile = new Button(newOrOldFileDialogShell, SWT.NONE | SWT.CENTER);
+        oldFile.setBounds(300, 100, 100, 30);
+        oldFile.setText("Current file");
+        newFile.addSelectionListener(widgetSelectedAdapter(event -> {
+            try {
+                saveFileDialog(newOrOldFileDialogShell);
+                userDialog.createFileWithRootElement(bufferName, parentShell);
+                userDialog.writeElement(userDialog.getDataBase(), bufferName, parentShell);
+            } catch (IOException | SAXException | ParserConfigurationException ex) {
+                Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (TransformerException ex) {
+                Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            newOrOldFileDialogShell.close();
+        }
+        ));
+        oldFile.addSelectionListener(widgetSelectedAdapter(event -> {
+            try {
+                userDialog.clearFile(userDialog.getFileName(), true);
+                userDialog.writeElement(userDialog.getDataBase(), userDialog.getFileName(), parentShell);
+            } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
+                Logger.getLogger(UserDialog.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            newOrOldFileDialogShell.close();
+        }
+        ));
+        newOrOldFileDialogShell.pack();
+        newOrOldFileDialogShell.open();
+    }
 
-                @Override
-                public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-                    System.out.println("Start element: " + qName);
-                    if (qName.equalsIgnoreCase("student")) {
-                        bStudent = true;
-                        studentReadingStarted = true;
-                        String bufferName = "";
-                        String bufferGroup = "";
+    public static void printToTable(TableItem nameOfItem, int index, String information) {
+        nameOfItem.setText(index, information);
+    }
 
-                        newStudentData.add(Integer.toString(rowCounter));
-                        //  TableItem item = new TableItem(table, SWT.BORDER);
-                        //   rows.add(item);
-                        int length = attributes.getLength();
-                        for (int i = 0; i < length; i++) {
-                            String name = attributes.getQName(i);
-                            System.out.println("Attr name:" + name);
-                            String value = attributes.getValue(i);
-                            if (i == 0) {
-                                bufferGroup = attributes.getValue(i);
-                            } else {
-                                bufferName = attributes.getValue(i);
-                            }
-                            System.out.println("Attr value:" + value + " current i=" + i);
-//newStudentData.add(value);
-                            if (name.equals("group")) {
-//printToTable(rows.get(rowCounter), 2, value);
-//newStudentData.add(value);
-                                columnCounter = i;
-                            }
-                            if (name.equals("name")) {
-//printToTable(rows.get(rowCounter), 1, value);
-//newStudentData.add(value);
-                                columnCounter = i;
-                            }
-                        }
-                        newStudentData.add(bufferName);
-                        newStudentData.add(bufferGroup);
-                    }
-                    if (qName.equalsIgnoreCase("Sem")) {
-                        bSem = true;
-                        String name = attributes.getQName(0);
-                        System.out.println("Attr name:" + name);
-                        String value = attributes.getValue(0);
-                        System.out.println("Attr value:" + value);
-                        tempAttrStorage = Integer.parseInt(value);
-                    }
-                    // get the number of attributes in the list    
+    public void printDataBaseToTable(Table table, int amountOfRows) {
+        //table.clearAll();
+        //на for int i=start; i<stop; i++
+        table.removeAll();
+        rows.clear();
+        for (int i = 0; i < amountOfRows; i++) {
+            // TableItem row = new TableItem(table, SWT.BORDER);
+            rows.add(new TableItem(table, SWT.BORDER));
+            for (int j = 0; j < userDialog.getStudentsSize(i); j++) {
+                printToTable(rows.get(i), j, userDialog.getStudentData(i, j));
+            }
+        }
+    }
+
+    public void printDataBaseToTable(Table table) {
+        //table.clearAll();
+        //на for int i=start; i<stop; i++
+        table.removeAll();
+        rows.clear();
+        for (int i = 0; i < userDialog.getStudentsSize(); i++) {
+            // TableItem row = new TableItem(table, SWT.BORDER);
+            rows.add(new TableItem(table, SWT.BORDER));
+            for (int j = 0; j < userDialog.getStudentsSize(i); j++) {
+                printToTable(rows.get(i), j, userDialog.getStudentData(i, j));
+            }
+        }
+    }
+
+    public void fromTableToDataBase() {
+        int tempCounter = 0;
+        for (int i = 0; i < rows.size(); i++) {
+            ArrayList<String> tempArray = new ArrayList();
+            tempCounter = 0;
+            for (int j = 0; j < 14; j++) {
+                tempArray.add(rows.get(i).getText(j));
+                if (j > 2 & j < 13) {
+                    tempCounter += Integer.parseInt(rows.get(i).getText(j));
                 }
-
-                @Override
-                public void endElement(String uri, String localName, String qName) throws SAXException {
-                    System.out.println("End element: " + qName);
-                    if (qName.equals("student")) {
-                        //printToTable(rows.get(rowCounter), 0, Integer.toString(rowCounter));
-                        //newStudentData.add(Integer.toString(rowCounter));
-                        ArrayList<String> buffer = new ArrayList();
-                        int termWorkCounter = 0;
-                        for (int i = 0; i < newStudentData.size(); i++) {
-                            buffer.add(newStudentData.get(i));
-                        }
-                        for (int i = 0; i < 10; i++) {
-                            termWorkCounter += Integer.parseInt(buffer.get(i + 3));
-                        }
-                        buffer.add(Integer.toString(termWorkCounter));
-                        newStudentData.clear();
-                        db.addStudentData(buffer);
-                        rowCounter++;
-                        columnCounter = 0;
-                    }
-                }
-
-                @Override
-                public void characters(char ch[], int start, int length) throws SAXException {
-                    if (bStudent) {
-                        System.out.println("Student: " + new String(ch, start, length));
-                        bStudent = false;
-                        //newStudentData.add(Integer.toString(buffer));
-                        // buffer=0;
-                    }
-                    if (bSem) {
-                        System.out.println("Sem value: " + new String(ch, start, length));
-                        bSem = false;
-                        newStudentData.add(new String(ch, start, length));
-                        //  printToTable(rows.get(rowCounter), columnCounter+2,new String(ch, start, length));
-                        //printToTable(rows.get(rowCounter), tempAttrStorage+3,new String(ch, start, length));
-                        columnCounter++;
-                    }
-                }
-            };
-            saxParser.parse(DataBase.getFileName(), defaultHandler);
-        } catch (IOException | ParserConfigurationException | SAXException | IllegalArgumentException ex) {
-            WindowForm.Error(new Shell(), "File open error", "You did not choosed the file.");
-            //System.out.println(ex.getLocalizedMessage());
+            }
+            tempArray.add(Integer.toString(tempCounter));
+            userDialog.addStudentData(tempArray);
         }
     }
 
     public void loadTable() {
-        DataBase db = new DataBase();
         Display display = new Display();
-        // Shell shell = new Shell(display, SWT.SHELL_TRIM);
-        //   GridLayout gridLayout = new GridLayout();
         Shell MainMenu = new Shell(display, SWT.SHELL_TRIM);
         Table table = new Table(MainMenu, SWT.READ_ONLY);
         GridData gridData = new GridData();
@@ -427,7 +737,7 @@ transformer.transform(new DOMSource(document), new StreamResult(file));
         table.setLayoutData(gridData);
         table.setBounds(0, 0, 1300, 300);
         table.setLinesVisible(true);
-        table.computeSize(db.getCounter(), db.getCounter());
+        table.computeSize(userDialog.getCounter(), userDialog.getCounter());
         table.setHeaderVisible(true);
         TableColumn numberOfRow = new TableColumn(table, SWT.BORDER);
         numberOfRow.setText("№");
@@ -447,10 +757,6 @@ transformer.transform(new DOMSource(document), new StreamResult(file));
             SocialWork.setWidth(90);
             columns.add(SocialWork);
         }
-        Button updateTable = new Button(MainMenu, SWT.NONE);
-        updateTable.setBounds(0, 300, 305, 30);
-        updateTable.setText("Update table");
-
         Button addItem = new Button(MainMenu, SWT.NONE);
         addItem.setBounds(306, 300, 305, 30);
         addItem.setText("Add item");
@@ -464,146 +770,136 @@ transformer.transform(new DOMSource(document), new StreamResult(file));
         deleteItem.setBounds(305, 330, 305, 30);
         deleteItem.setText("Delete item");
         Button back = new Button(MainMenu, SWT.NONE);
-        back.setBounds(615, 330, 30, 30);
+        back.setBounds(615, 300, 30, 30);
         back.setText("<");
         Label pageInfo = new Label(MainMenu, SWT.NONE);
-        pageInfo.setText("Page " + currentPage + "|" + numberOfPages);
-        pageInfo.setBounds(650, 330, 50, 30);
+        OutputByPage obp = new OutputByPage();
+        pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+        pageInfo.setBounds(670, 300, 60, 30);
         Button forward = new Button(MainMenu, SWT.NONE);
-        forward.setBounds(700, 330, 30, 30);
+        forward.setBounds(740, 300, 30, 30);
         forward.setText(">");
+        Button goToLastPage = new Button(MainMenu, SWT.NONE);
+        goToLastPage.setBounds(730, 335, 60, 30);
+        goToLastPage.setText("Last page");
+        Button goToFirstPage = new Button(MainMenu, SWT.NONE);
+        goToFirstPage.setBounds(615, 335, 60, 30);
+        goToFirstPage.setText("First page");
         Button settings = new Button(MainMenu, SWT.NONE);
-        settings.setBounds(615, 300, 100, 30);
+        settings.setBounds(0, 300, 305, 30);
         settings.setText("Settings");
-         Label error = new Label(MainMenu, SWT.NONE);
-         error.setBounds(600, 360, 200,30);
-        // loadTableFromFile(true,db.getFileName(),table);
-        //  printDataBaseToTable(table);
-        //getAmountOfPages(db.getStudentsSize(), 10);
-        /*  Button devMode = new Button (MainMenu, SWT.NONE);
-       devMode.setBounds(330, 360, 100, 30);
-       devMode.setText("Output DB");
-        devMode.addSelectionListener(new SelectionAdapter() {
+        Label error = new Label(MainMenu, SWT.NONE);
+        error.setBounds(620, 360, 200, 30);
+        Button saveTable = new Button(MainMenu, SWT.NONE);
+        saveTable.setBounds(305, 360, 305, 30);
+        saveTable.setText("Save table to file");
+        Label currentStudentsAmount = new Label(MainMenu, SWT.NONE);
+        currentStudentsAmount.setBounds(780, 300, 200, 30);
+        saveTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-               db.outputStudents();
+                try {
+                    newOrOldFile(MainMenu);
+                } catch (SAXException | IOException | ParserConfigurationException ex) {
+                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
-        });*/
+        });
+        goToFirstPage.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                obp.goToPage(table, 1);
+                try {
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                } catch (IndexOutOfBoundsException ex) {
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                    error.setText("You have reached the end of table");
+                }
+            }
+        });
+        goToLastPage.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                try {
+                    obp.goToPage(table, obp.getAmountOfPages());
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                } catch (IndexOutOfBoundsException ex) {
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                    error.setText("You have reached the end of table");
+                }
+            }
+        });
         loadTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                UserDialog ud = new UserDialog();
-                db.removeDataFromBase();
-                ud.chooseFileDialog(MainMenu);
-                loadTableFromFile(true, DataBase.getFileName(), table);
-                getAmountOfPages(db.getStudentsSize(), numberOfRowsOnPage);
-                printDataBaseToTable(table, 0, numberOfRowsOnPage);
-                 pageInfo.setText("Page " + (currentPage+1) + "|" + numberOfPages);
+                userDialog.removeDataFromBase();
+                chooseFileDialog(MainMenu);
+                if (userDialog.getFileName() == null) {
+                    return;
+                }
+                userDialog.loadTableFromFile(true, userDialog.getFileName());
+                obp.setDefaultPageSettings(table, userDialog.getStudentsSize(), obp.getAmountOfRowsOnPage(), userDialog.getDataBase());
+                pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
+//TODO: настроить компонент в диалоге поиска, возможно переписать массив  в диалоге с индексов на  массив со студентами. Настроить изменение настроек в компоненте.
             }
         });
         settings.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                UserDialog ud = new UserDialog();
-                ud.settingsDialog(MainMenu);
-                //loadTableFromFile(true,DataBase.getFileName(),table);
+                settingsDialog(pageInfo, currentStudentsAmount, obp, table, MainMenu);
+                pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
             }
         });
         back.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                                if (currentPage-1==-1) {error.setText("You have reached the end of file"); return;}
                 error.setText("");
-                currentPageStart -= numberOfRowsOnPage;
-                currentPageEnd -= numberOfRowsOnPage;
-                currentPage--;
-                                    pageInfo.setText("Page " + (currentPage+1) + "|" + numberOfPages);
-                                    
-
-                // printDataBaseToTable(table,currentPageStart,currentPageEnd);
                 try {
-                    printDataBaseToTable(table, currentPageStart, currentPageEnd);
-                    System.out.println("Current page start: " + currentPageStart);
-                    System.out.println("Current page end: " + currentPageEnd);
-                    System.out.println("Current page: " + currentPage);
-                                        System.out.println("Number of rows on the page: " + numberOfRowsOnPage);
-
-                    
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                   WindowForm.Error(MainMenu, "Out of sizes", "An error was encountered. Outputting data has leaved borders massive.");
+                    obp.previousPage(table);
+                } catch (IndexOutOfBoundsException ex) {
+                    error.setText("You have reached the end of table");
                 }
-
+                pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
             }
         });
         forward.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-            if (currentPage==numberOfPages-1){error.setText("You have reached the end of file"); return;}
-
-                                error.setText("");
-                currentPageStart += numberOfRowsOnPage;
-                currentPageEnd += numberOfRowsOnPage;
-                currentPage++;
-                pageInfo.setText("Page " + (currentPage+1) + "|" + numberOfPages);
+                error.setText("");
                 try {
-                    printDataBaseToTable(table, currentPageStart, currentPageEnd);
-                    System.out.println("Current page start: " + currentPageStart);
-                    System.out.println("Current page end: " + currentPageEnd);
-                    System.out.println("Current page: " + currentPage);
+                    obp.nextPage(table);
                 } catch (IndexOutOfBoundsException ex) {
-                    WindowForm.Error(MainMenu, "Out of sizes", "An error was encountered. Outputting data has leaved borders massive.");                        
+                    error.setText("You have reached the end of table");
                 }
+                pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
             }
         });
         deleteItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                UserDialog ud = new UserDialog();
                 try {
-                    // ud.loadFindItemDialog(MainMenu);
-                    // deleteElement(8,MainMenu);
-                    ud.changeTableDialog(MainMenu);
+                    changeTableDialog(table, pageInfo, currentStudentsAmount, obp, MainMenu);
                 } catch (ParserConfigurationException ex) {
                     Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 //  printDataBaseToTable(table);
-                db.outputStudents();
-            }
-        });
-
-        //  fromTableToDataBase();
-        updateTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent arg0) {
-                try {
-                    //   UserDialog ud = new UserDialog();
-                    //db.removeDataFromBase();
-                    //  loadTableFromFile(true,DataBase.getFileName(),table);
-                    table.removeAll();
-                    db.outputStudents();
-                    printDataBaseToTable(table);
-                } catch (IndexOutOfBoundsException ex) {
-                    WindowForm.Error(MainMenu, "Fatal error", "Possible data format in the file are wrong, or some data missed");
-                }
+                // userDialog.outputStudents();
             }
         });
         addItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                UserDialog.addToTableDialog(table, MainMenu);
-                //printDataBaseToTable(table);
+                addToTableDialog(currentStudentsAmount, pageInfo, table, obp, MainMenu);
+                currentStudentsAmount.setText("Current amount of students: " + userDialog.getStudentsSize());
             }
         });
         findItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                UserDialog ud = new UserDialog();
-                ud.loadFindItemDialog(MainMenu);
-                //printDataBaseToTable(table);
-                // loadTableFromFile(true,DataBase.getFileName(),table);
+                loadFindItemDialog(MainMenu);
             }
         });
         WindowForm.WindowOpen(display, MainMenu, 1270, 500);
     }
-    //public void 
 }

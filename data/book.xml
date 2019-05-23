@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<students>
-        <student aname="Нестеров Пётр Петрович" bgroup="721702" sem0 ="1" sem1="2"  sem2 ="4" sem3 ="4" sem4 ="6" sem5 ="1" sem6 ="8" sem7 ="9" sem8 ="10" sem9 ="5"/>
-        <student aname="Касатиков Пётр иванович" bgroup="721702" sem0 ="1" sem1="4"  sem2 ="2" sem3 ="3" sem4 ="1" sem5 ="0" sem6 ="4" sem7 ="5" sem8 ="7" sem9 ="9"/>
-        <student aname="Зубров Василий Владимирович" bgroup="721702" sem0 ="4" sem1="6"  sem2 ="8" sem3 ="3" sem4 ="7" sem5 ="2" sem6 ="1" sem7 ="4" sem8 ="6" sem9 ="5"/>
-</students>
