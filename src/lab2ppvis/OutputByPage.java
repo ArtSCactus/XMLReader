@@ -16,25 +16,26 @@ import org.eclipse.swt.widgets.TableItem;
  * @author Asusq
  */
 public class OutputByPage {
+
     private int amountOfPages = 0;
     private int currentPageStart = 0;
     private int numberOfRowsOnPage = 10;
     private int currentPageEnd = numberOfRowsOnPage;
     private int currentPage = 0;
-GUI gui = new GUI();
-   // UserDialog ud = new UserDialog();
+    GUI gui = new GUI();
+    // UserDialog ud = new UserDialog();
 
- public void printDataBaseToTable(Table table, int start, int end) {
+    public void printDataBaseToTable(Table table, int start, int end) {
         table.removeAll();
         gui.rows.clear();
         int rowsCounter = 0;
         String nameTranslator = "";
-        int indexSaverInCaseOfException=0;
+        int indexSaverInCaseOfException = 0;
         for (int i = start; i < end + 1; i++) {
             gui.rows.add(new TableItem(table, SWT.BORDER));
             try {
                 for (int index = 0; index < gui.controller.getStudentsSize(i); index++) {
-                    indexSaverInCaseOfException=index;
+                    indexSaverInCaseOfException = index;
                     switch (index) {
                         case 0:
                             printToTable(gui.rows.get(rowsCounter), 0, gui.controller.getStudentData(i, index));
@@ -59,8 +60,8 @@ GUI gui = new GUI();
                     }
                 }
             } catch (IndexOutOfBoundsException ex) {
-              end = gui.controller.getStudentsSize();
-            gui.rows.add(new TableItem(table, SWT.BORDER));
+                end = gui.controller.getStudentsSize();
+                gui.rows.add(new TableItem(table, SWT.BORDER));
                 for (int index = indexSaverInCaseOfException; index < gui.controller.getStudentsSize(i); index++) {
                     switch (index) {
                         case 0:
@@ -89,6 +90,7 @@ GUI gui = new GUI();
             rowsCounter++;
         }
     }
+
     public void setAmountOfPages(int amountOfStudents, int rowsOnPage) {
         int rowsCounter = 0;
         for (int i = 0; i < amountOfStudents; i++) {
@@ -127,9 +129,11 @@ GUI gui = new GUI();
     public int getAmountOfPages() {
         return amountOfPages;
     }
-public int getAmountOfRowsOnPage(){
-    return numberOfRowsOnPage;
-}
+
+    public int getAmountOfRowsOnPage() {
+        return numberOfRowsOnPage;
+    }
+
     public int getCurrentPage() {
         return currentPage;
     }
@@ -138,8 +142,10 @@ public int getAmountOfRowsOnPage(){
         numberOfRowsOnPage = number;
     }
 
-    public void nextPage(Table table){
-        if (currentPage>amountOfPages-1) return;
+    public void nextPage(Table table) {
+        if (currentPage > amountOfPages - 1) {
+            return;
+        }
         currentPage++;
         currentPageEnd += numberOfRowsOnPage;
         currentPageStart += numberOfRowsOnPage;
@@ -147,49 +153,60 @@ public int getAmountOfRowsOnPage(){
     }
 
     public void previousPage(Table table) {
-        if (currentPage<1) return;
+        if (currentPage < 1) {
+            return;
+        }
         currentPage--;
         currentPageEnd -= numberOfRowsOnPage;
         currentPageStart -= numberOfRowsOnPage;
         printDataBaseToTable(table, currentPageStart, currentPageEnd);
     }
-    public void rewriteInfo(Table table){
-        table.removeAll();
-        printDataBaseToTable(table , currentPageStart,currentPageEnd);
-    }
 
-    public void setDefaultPageSettings(Table table, int amountOfStudents, int newNumberOfRowsOnPage, ArrayList dataBase) {
-    clearDataBase();
-    getDataBase(dataBase);
-    amountOfPages=0;
-       setAmountOfPages(amountOfStudents, newNumberOfRowsOnPage);
-        currentPageStart = 0;
-        numberOfRowsOnPage = newNumberOfRowsOnPage;
-        currentPageEnd = numberOfRowsOnPage-1;
-        currentPage = 1;
+    public void rewriteInfo(Table table) {
         table.removeAll();
         printDataBaseToTable(table, currentPageStart, currentPageEnd);
     }
-    public void getDataBase(ArrayList list){
+
+    public void setDefaultPageSettings(Table table, int amountOfStudents, int newNumberOfRowsOnPage, ArrayList dataBase) {
+        clearDataBase();
+        getDataBase(dataBase);
+        amountOfPages = 0;
+        setAmountOfPages(amountOfStudents, newNumberOfRowsOnPage);
+        currentPageStart = 0;
+        numberOfRowsOnPage = newNumberOfRowsOnPage;
+        currentPageEnd = numberOfRowsOnPage - 1;
+        currentPage = 1;
+        table.removeAll();
+        try{
+        printDataBaseToTable(table, currentPageStart, currentPageEnd);
+        }catch(IndexOutOfBoundsException ex){
+            numberOfRowsOnPage = dataBase.size();
+        currentPageEnd = numberOfRowsOnPage - 1;
+        currentPage = 1;printDataBaseToTable (table, currentPageStart, dataBase.size());}
+    }
+
+    public void getDataBase(ArrayList list) {
         gui.controller.addDataBase(list);
     }
-    public void clearDataBase(){
+
+    public void clearDataBase() {
         gui.controller.removeDataFromBase();
     }
-    public void goToPage(Table table, int targetPage){
-        if (targetPage>currentPage){
-        currentPageStart+=numberOfRowsOnPage*(targetPage-currentPage);
-        currentPageEnd+=(numberOfRowsOnPage*(targetPage-currentPage));
-                                    currentPage=targetPage;
+
+    public void goToPage(Table table, int targetPage) {
+        if (targetPage > currentPage) {
+            currentPageStart += numberOfRowsOnPage * (targetPage - currentPage);
+            currentPageEnd += (numberOfRowsOnPage * (targetPage - currentPage));
+            currentPage = targetPage;
+            printDataBaseToTable(table, currentPageStart, currentPageEnd);
+        } else {
+            if (targetPage < currentPage) {
+
+                currentPageStart -= numberOfRowsOnPage * (currentPage - targetPage);
+                currentPageEnd -= (numberOfRowsOnPage * (currentPage - targetPage));
+                currentPage = targetPage;
                 printDataBaseToTable(table, currentPageStart, currentPageEnd);
-        }
-        else {if(targetPage<currentPage){
-           
-            currentPageStart-=numberOfRowsOnPage*(currentPage-targetPage);
-        currentPageEnd-=(numberOfRowsOnPage*(currentPage-targetPage));
-                                    currentPage=targetPage;
-                printDataBaseToTable(table, currentPageStart, currentPageEnd);
-}
+            }
 
         }
     }

@@ -229,7 +229,10 @@ public class GUI {
                 for (Integer item : indexes) {
                     controller.removeStudent(controller.getIndexOfRowWithTarget(Integer.toString(item), 0)); //TODO: переписать так, чтобы при каждом удалении вычислялся индекс в массиве.
                 }
+                try {
                 obp.setDefaultPageSettings(table, controller.getStudentsSize(), obp.getAmountOfRowsOnPage(), controller.getDataBase());
+                } catch (IndexOutOfBoundsException ex) {obp.setDefaultPageSettings(table, controller.getStudentsSize(), obp.getAmountOfRowsOnPage(), controller.getDataBase());
+}
                 obp.rewriteInfo(table);
                 currentStudentsAmount.setText("Current amount of students: " + controller.getStudentsSize());
                 pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
@@ -306,7 +309,9 @@ public class GUI {
                 }
             } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
                 Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
-            }catch (NumberFormatException ex) {WindowForm.Error(shell, "Wrong data fromat", "Term value cannot be text.");}
+            } catch (NumberFormatException ex) {
+                WindowForm.Error(shell, "Wrong data fromat", "Term value cannot be text.");
+            }
         }
         ));
         dialog.pack();
@@ -664,9 +669,12 @@ public class GUI {
         oldFile.addSelectionListener(widgetSelectedAdapter(event -> {
             try {
                 try {
-                controller.clearFile(controller.getFileName(), true);
-                controller.writeElement(controller.getDataBase(), controller.getFileName(), parentShell);
-            }catch(IllegalArgumentException ex){WindowForm.Error(parentShell, "No file name or path", "You did not loaded any file.");return;}
+                    controller.clearFile(controller.getFileName(), true);
+                    controller.writeElement(controller.getDataBase(), controller.getFileName(), parentShell);
+                } catch (IllegalArgumentException ex) {
+                    WindowForm.Error(parentShell, "No file name or path", "You did not loaded any file.");
+                    return;
+                }
             } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
                 Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -839,11 +847,13 @@ public class GUI {
                     return;
                 }
                 controller.loadTableFromFile(true, controller.getFileName());
-                try{
-                obp.setDefaultPageSettings(table, controller.getStudentsSize(), obp.getAmountOfRowsOnPage(), controller.getDataBase());
-                pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
-                currentStudentsAmount.setText("Current amount of students: " + controller.getStudentsSize());
-                } catch (IndexOutOfBoundsException ex){error.setText("You have reached the end of table");}
+                try {
+                    obp.setDefaultPageSettings(table, controller.getStudentsSize(), obp.getAmountOfRowsOnPage(), controller.getDataBase());
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                    currentStudentsAmount.setText("Current amount of students: " + controller.getStudentsSize());
+                } catch (IndexOutOfBoundsException ex) {
+                    error.setText("You have reached the end of table");
+                }
             }
         });
         settings.addSelectionListener(new SelectionAdapter() {
