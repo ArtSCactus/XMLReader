@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.TableItem;
 
 /**
  *
- * @author Asusq
+ * @author ArtSCactus
  */
 public class OutputByPage {
 
@@ -23,7 +23,6 @@ public class OutputByPage {
     private int currentPageEnd = numberOfRowsOnPage;
     private int currentPage = 0;
     GUI gui = new GUI();
-    // UserDialog ud = new UserDialog();
 
     public void printDataBaseToTable(Table table, int start, int end) {
         table.removeAll();

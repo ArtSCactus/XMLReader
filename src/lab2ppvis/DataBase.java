@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Asus
+ * @author ArtSCactus
  */
 public class DataBase {
 private  String fileName;
@@ -94,7 +94,6 @@ public void outputStudents(){
        if (j==2) System.out.println("group: "+students.get(i).get(j));
        if(j>2 & j<13) System.out.println("sem["+(j)+"]: "+students.get(i).get(j));
        if (j==13) System.out.println("summary work: "+students.get(i).get(j));
-    //   System.out.println("Current element["+i+"]["+j+"]: "+students.get(i).get(j));
     }
 }
 private  int counter = 0;

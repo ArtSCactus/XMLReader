@@ -20,7 +20,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -31,12 +30,10 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Asus
+ * @author ArtSCactus
  */
 public class Controller {
         DataBase dataBase = new DataBase();
-      //  GUI gui = new GUI();
-       private String bufferName="";
 public void removeDataFromBase(){
     dataBase.removeDataFromBase();
 }
@@ -100,7 +97,6 @@ public void setCounter(int i){
         Document document = documentBuilder.parse(fileName);
         Node root = document.getFirstChild();
         for (int i = 0; i < students.size(); i++) {
-            // for (int j=0; j<database.getStudentsSize(i); j++){
             Element student = document.createElement("student");
             root.appendChild(student);
             student.setAttribute("name", students.get(i).get(1));
@@ -130,7 +126,6 @@ public void setCounter(int i){
         Document document = documentBuilder.parse(fileName);
 
         Node root = document.getElementsByTagName("students").item(0);
-        // onlyContentOfStudents=true? document.removeChild(root) : root.removeChild(root.getFirstChild());
         if (onlyContentOfStudents == true) {
             NodeList nodelist = root.getChildNodes();
             for (int i = 0; i < nodelist.getLength(); i++) {
@@ -157,13 +152,11 @@ public void setCounter(int i){
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.transform(new DOMSource(doc), new StreamResult(file));
-        // saveTableToFile(doc,fileName, shellForErrorWindow);
     }
      public void loadTableFromFile(boolean debugMode, String fileLocation) {
         try {
             SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
             SAXParser saxParser = saxParserFactory.newSAXParser();
-            //userDialog.userDialog.userDialog.removeDataFromBase();
             DefaultHandler defaultHandler = new DefaultHandler() {
                 boolean studentReadingStarted = false;
                 boolean bStudent = false;
@@ -259,22 +252,17 @@ public void setCounter(int i){
                     if (bStudent) {
                         System.out.println("Student: " + new String(ch, start, length));
                         bStudent = false;
-                        //newStudentData.add(Integer.toString(buffer));
-                        // buffer=0;
                     }
                     if (bSem) {
                         System.out.println("Sem value: " + new String(ch, start, length));
                         bSem = false;
-                        newStudentData.add(new String(ch, start, length));
-                        //  printToTable(rows.get(rowCounter), columnCounter+2,new String(ch, start, length));
-                        //printToTable(rows.get(rowCounter), tempAttrStorage+3,new String(ch, start, length));
+                        newStudentData.add(new String(ch, start, length));                
                         columnCounter++;
                     }
                 }
             };
             saxParser.parse(dataBase.getFileName(), defaultHandler);
         } catch (IOException | ParserConfigurationException | SAXException | IllegalArgumentException ex) {
-           // WindowForm.Error(new Shell(), "File open error", "You did not choosed the file.");
            System.out.println(ex.getLocalizedMessage());
         }
     }

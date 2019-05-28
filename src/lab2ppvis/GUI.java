@@ -42,11 +42,10 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Asus
+ * @author ArtSCactus
  */
 public class GUI {
 
-    //private 
     public ArrayList<TableItem> rows = new ArrayList();
 
     public ArrayList getRows() {
@@ -79,7 +78,6 @@ public class GUI {
             names[i] = FILTERS[i][0];
             exts[i] = FILTERS[i][1];
         }
-        // Определение фильтра диалога FileDialog
         dialog.setFilterNames(names);
         dialog.setFilterExtensions(exts);
     }
@@ -89,14 +87,13 @@ public class GUI {
         FileDialog dlg = new FileDialog(parentShell, SWT.OPEN);
         setFilters(dlg);
         String fname = dlg.open();
-        if (fname != null) //System.out.println ("" + fname);
+        if (fname != null)
         {
             controller.setFileName(fname);
         }
     }
 
     public void saveFileDialog(Shell parentShell) {
-        // Диалоговое окно сохранения файла
         FileDialog dlg = new FileDialog(parentShell, SWT.SAVE);
         setFilters(dlg);
         String fname = dlg.open();
@@ -118,7 +115,6 @@ public class GUI {
             String[] items = combo.getItems();
             for (String item : items) {
                 if (item.equals(s) == true) {
-                    // WindowForm.Error(shell,"Error 001", "Such element already exists");
                     exist = true;
                     break;
                 }
@@ -227,7 +223,7 @@ public class GUI {
                     return;
                 }
                 for (Integer item : indexes) {
-                    controller.removeStudent(controller.getIndexOfRowWithTarget(Integer.toString(item), 0)); //TODO: переписать так, чтобы при каждом удалении вычислялся индекс в массиве.
+                    controller.removeStudent(controller.getIndexOfRowWithTarget(Integer.toString(item), 0));
                 }
                 try {
                 obp.setDefaultPageSettings(table, controller.getStudentsSize(), obp.getAmountOfRowsOnPage(), controller.getDataBase());
@@ -247,7 +243,7 @@ public class GUI {
         //DataBase model = new DataBase();
         ArrayList<Label> labelList = new ArrayList();
         ArrayList<Combo> comboList = new ArrayList();
-        String[] numbers = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};//TODO: не забудь потом проверить на конвертацию.     
+        String[] numbers = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}; 
         Shell dialog = new Shell(shell, SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
         dialog.setLayout(new GridLayout(2, false));
         Composite namePart = new Composite(dialog, SWT.NONE);
@@ -288,7 +284,6 @@ public class GUI {
         }
         Composite UI = new Composite(dialog, SWT.BORDER);
         UI.setBounds(0, 150, 305, 30);
-        //две колонки name и group с Text, остальное combobox. Потом это всё считать и в разослать по функциям на таблицу.
         UI.setLayout(new RowLayout(SWT.HORIZONTAL));
         Button inputToTable = new Button(UI, SWT.NONE);
         inputToTable.setText("Add to table");
@@ -449,11 +444,6 @@ public class GUI {
         forward.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                /*  if (numberOfPages==0){WindowForm.Error(findItemShell, "No table", "Table are not loaded"); return;}
-                if (currentPage == numberOfPages - 1) {
-                    error.setText("You have reached the end of file");
-                    return;
-                }*/
                 error.setText("");
                 try {
                     obp.nextPage(table);
@@ -505,14 +495,14 @@ public class GUI {
                         return;
                     }
                     for (int i = 0; i < controller.getStudentsSize(); i++) {
-                        if (studentName.getText().equals("")) {//controller.getStudentData(i).get(2).equals(targetName)) {
-                            indexes.addAll(controller.getIndexesOfRowsWithTarget(targetName, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 2, 15));
+                        if (studentName.getText().equals("")) {
+                            indexes.addAll(controller.getIndexesOfRowsWithTarget(targetName, downLimit.getText(), upLimit.getText(), 2, 15));
                             elementNotFound = false;
                             break;
                         } //that's name of student
                         else {
                             if (controller.getStudentData(i).get(4).equals(targetGroup)) {
-                                indexes.addAll(controller.getIndexesOfRowsWithTarget(targetGroup, downLimit.getText(), upLimit.getText()/*targetInput.getText()*/, 4, 15));;
+                                indexes.addAll(controller.getIndexesOfRowsWithTarget(targetGroup, downLimit.getText(), upLimit.getText(), 4, 15));;
                                 elementNotFound = false;
                                 break;
                             } //that's group of student
@@ -595,7 +585,6 @@ public class GUI {
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.transform(new DOMSource(doc), new StreamResult(file));
-        // saveTableToFile(doc,fileName, shellForErrorWindow);
     }
 
     public void addNewElement(Table table, String studentName, String studentSurname, String studentPatronymic, String studentGroup, ArrayList<Combo> comboList, Shell shellForErrorWindow) throws TransformerException, IOException, SAXException, ParserConfigurationException {
@@ -690,12 +679,9 @@ public class GUI {
     }
 
     public void printDataBaseToTable(Table table, int amountOfRows) {
-        //table.clearAll();
-        //на for int i=start; i<stop; i++
         table.removeAll();
         rows.clear();
         for (int i = 0; i < amountOfRows; i++) {
-            // TableItem row = new TableItem(table, SWT.BORDER);
             rows.add(new TableItem(table, SWT.BORDER));
             for (int j = 0; j < controller.getStudentsSize(i); j++) {
                 printToTable(rows.get(i), j, controller.getStudentData(i, j));
@@ -704,12 +690,9 @@ public class GUI {
     }
 
     public void printDataBaseToTable(Table table) {
-        //table.clearAll();
-        //на for int i=start; i<stop; i++
         table.removeAll();
         rows.clear();
         for (int i = 0; i < controller.getStudentsSize(); i++) {
-            // TableItem row = new TableItem(table, SWT.BORDER);
             rows.add(new TableItem(table, SWT.BORDER));
             for (int j = 0; j < controller.getStudentsSize(i); j++) {
                 printToTable(rows.get(i), j, controller.getStudentData(i, j));
@@ -759,7 +742,7 @@ public class GUI {
         group.setText("Группа");
         group.setWidth(100);
         table.setHeaderVisible(true);
-        ArrayList<TableColumn> columns = new ArrayList();// Columns massive
+        ArrayList<TableColumn> columns = new ArrayList();
         for (int i = 0; i < 10; i++) {
             TableColumn SocialWork = new TableColumn(table, SWT.BORDER);
             SocialWork.setText("Семестр " + (i + 1));
@@ -895,8 +878,6 @@ public class GUI {
                 } catch (ParserConfigurationException ex) {
                     Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                //  printDataBaseToTable(table);
-                // controller.outputStudents();
             }
         });
         addItem.addSelectionListener(new SelectionAdapter() {
