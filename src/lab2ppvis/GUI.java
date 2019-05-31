@@ -87,8 +87,7 @@ public class GUI {
         FileDialog dlg = new FileDialog(parentShell, SWT.OPEN);
         setFilters(dlg);
         String fname = dlg.open();
-        if (fname != null)
-        {
+        if (fname != null) {
             controller.setFileName(fname);
         }
     }
@@ -226,9 +225,10 @@ public class GUI {
                     controller.removeStudent(controller.getIndexOfRowWithTarget(Integer.toString(item), 0));
                 }
                 try {
-                obp.setDefaultPageSettings(table, controller.getStudentsSize(), obp.getAmountOfRowsOnPage(), controller.getDataBase());
-                } catch (IndexOutOfBoundsException ex) {obp.setDefaultPageSettings(table, controller.getStudentsSize(), obp.getAmountOfRowsOnPage(), controller.getDataBase());
-}
+                    obp.setDefaultPageSettings(table, controller.getStudentsSize(), obp.getAmountOfRowsOnPage(), controller.getDataBase());
+                } catch (IndexOutOfBoundsException ex) {
+                    obp.setDefaultPageSettings(table, controller.getStudentsSize(), obp.getAmountOfRowsOnPage(), controller.getDataBase());
+                }
                 obp.rewriteInfo(table);
                 currentStudentsAmount.setText("Current amount of students: " + controller.getStudentsSize());
                 pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
@@ -243,7 +243,7 @@ public class GUI {
         //DataBase model = new DataBase();
         ArrayList<Label> labelList = new ArrayList();
         ArrayList<Combo> comboList = new ArrayList();
-        String[] numbers = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}; 
+        String[] numbers = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
         Shell dialog = new Shell(shell, SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
         dialog.setLayout(new GridLayout(2, false));
         Composite namePart = new Composite(dialog, SWT.NONE);
@@ -835,6 +835,7 @@ public class GUI {
                     pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
                     currentStudentsAmount.setText("Current amount of students: " + controller.getStudentsSize());
                 } catch (IndexOutOfBoundsException ex) {
+                    pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
                     error.setText("You have reached the end of table");
                 }
             }
@@ -849,6 +850,10 @@ public class GUI {
         back.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
+                if (obp.getCurrentPage() == 1) {
+                    error.setText("You have reached the end of table");
+                    return;
+                }
                 error.setText("");
                 try {
                     obp.previousPage(table);

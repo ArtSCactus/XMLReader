@@ -40,13 +40,13 @@ public class OutputByPage {
                             printToTable(gui.rows.get(rowsCounter), 0, gui.controller.getStudentData(i, index));
                             break;
                         case 1:
-                            nameTranslator += gui.controller.getStudentData(i, index) + " ";
+                            nameTranslator += gui.controller.getStudentData(i, index+2) + " ";
                             break;
                         case 2:
-                            nameTranslator += gui.controller.getStudentData(i, index) + " ";
+                            nameTranslator += gui.controller.getStudentData(i, index-1) + " ";
                             break;
                         case 3:
-                            nameTranslator += gui.controller.getStudentData(i, index) + " ";
+                            nameTranslator += gui.controller.getStudentData(i, index-1) + " ";
                             break;
                         case 4:
                             printToTable(gui.rows.get(rowsCounter), 1, nameTranslator);
@@ -67,13 +67,13 @@ public class OutputByPage {
                             printToTable(gui.rows.get(rowsCounter), 0, gui.controller.getStudentData(i, index));
                             break;
                         case 1:
-                            nameTranslator += gui.controller.getStudentData(i, index) + " ";
+                            nameTranslator += gui.controller.getStudentData(i, index+2) + " ";
                             break;
                         case 2:
-                            nameTranslator += gui.controller.getStudentData(i, index) + " ";
+                            nameTranslator += gui.controller.getStudentData(i, index-1) + " ";
                             break;
                         case 3:
-                            nameTranslator += gui.controller.getStudentData(i, index) + " ";
+                            nameTranslator += gui.controller.getStudentData(i, index-1) + " ";
                             break;
                         case 4:
                             printToTable(gui.rows.get(rowsCounter), 1, nameTranslator);
