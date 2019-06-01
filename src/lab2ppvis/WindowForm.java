@@ -51,7 +51,7 @@ public class WindowForm {
         display.dispose();
     }
 
-    public static void Error(Shell shell, String ErrorNumber, String ErrorMessage) {
+    public static void error(Shell shell, String ErrorNumber, String ErrorMessage) {
         MessageBox mb = new MessageBox(shell, SWT.ERROR | SWT.OK);
         mb.setText(ErrorNumber);
         mb.setMessage(ErrorMessage);

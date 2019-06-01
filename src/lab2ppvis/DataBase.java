@@ -14,31 +14,47 @@ import java.util.ArrayList;
 public class DataBase {
 private  String fileName;
 private  ArrayList<ArrayList> students = new ArrayList();
-
+/** Removes all data from data base*/
 public void removeDataFromBase(){
     students.clear();
 }
+/** Returns all data base in one massiv
+     * @return students (ArrayList)*/
 public ArrayList getDataBase(){
     return students;
 }
+/**Adding to data base new student in one massive (incommingList).
+     * @param incommingList*/
 public void addDataBase(ArrayList incommingList){
     students.addAll(incommingList);
 }
+/**Changes current file name.
+     * @param newFileName*/ 
 public  void setFileName(String newFileName){
     fileName=newFileName;
 }
+/**Gets name of current file name
+     * @return fileName*/
 public  String getFileName(){
     return fileName;
 }
+/**Removes student (massive of student data) by his inde
+     * @param indexOfStudent
+     * @param indexOfStudent*/ 
 public void removeStudent(int indexOfStudent){
     students.remove(indexOfStudent);
 }
+/** Returns numbers of students (number of massives) in data base*/
 public int getStudentsSize(){
    return students.size();
 }
+/**Returns amount elements in student data massive by its number (indexOfElement)
+     * @param indexOfElement
+     * @return students.get(indexOfElement).size() */
 public int getStudentsSize(int indexOfElement){
    return students.get(indexOfElement).size();
 }
+
 public void addStudentData(ArrayList incomingList){
 students.add(incomingList); 
 }
@@ -51,9 +67,9 @@ public ArrayList getStudentData(int studentIndex){
 public int getIndexOfRowWithTarget(String target){
         int indexOfRow=0;
         boolean existence = false;
-      for (int i=0; i<students.size(); i++)
-              if (students.get(i).get(1).equals(target)) {indexOfRow=i; existence=true;}
-     
+      for (int studentNumber=0; studentNumber<students.size(); studentNumber++)
+          for (int column=0; column<16; column++)
+              if (students.get(studentNumber).get(column).equals(target)) {indexOfRow=studentNumber; existence=true;}
      if(existence==true) return indexOfRow;
      else return -1;
     }
@@ -61,8 +77,7 @@ public int getIndexOfRowWithTarget(String target, int columnIndex){
         int indexOfRow=0;
         boolean existence = false;
       for (int i=0; i<students.size(); i++)
-              if (students.get(i).get(columnIndex).equals(target)) {indexOfRow=i; existence=true;}
-     
+              if (students.get(i).get(columnIndex).equals(target)) {return i;}     
      if(existence==true) return indexOfRow;
      else return -1;
     }
@@ -75,7 +90,7 @@ public ArrayList getIndexesOfRowsWithTarget(String target, int indexOfColumn){
 public ArrayList getIndexesOfRowsWithTarget(String nameOrGroup, String downLimit, String upLimit, int firstColumn, int secondColumn){
         ArrayList<Integer> indexesOfRows = new ArrayList();
       for (int i=0; i<students.size(); i++)
-              if (students.get(i).get(firstColumn).equals(nameOrGroup) && Integer.parseInt((String)students.get(i).get(13))>=Integer.parseInt(downLimit) &&  Integer.parseInt((String)students.get(i).get(13))<=Integer.parseInt(upLimit)) {indexesOfRows.add(i);}
+              if (students.get(i).get(firstColumn).equals(nameOrGroup) & Integer.parseInt((String)students.get(i).get(secondColumn))>=Integer.parseInt(downLimit) &  Integer.parseInt((String)students.get(i).get(secondColumn))<=Integer.parseInt(upLimit)) {indexesOfRows.add(i);}
      return indexesOfRows;
     }
 public boolean isExist(String target, int indexOfColumn){
