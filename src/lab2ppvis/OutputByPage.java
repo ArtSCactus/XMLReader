@@ -34,17 +34,13 @@ public class OutputByPage {
     private Table table;
     private Label error;
     private Label pageInfo;
-           private Label currentStudentsAmount;
-           private Label currentAmountOfRowsOnPage;
-           //private Label currentNumberOfRows;
-                   
-
-
-
+    private Label currentStudentsAmount;
+    private Label currentAmountOfRowsOnPage;
+    //private Label currentNumberOfRows;
 
     GUI gui = new GUI();
-    
-        public void settingsDialog(Shell parentShell) {
+
+    public void settingsDialog(Shell parentShell) {
         Shell settingsDialogShell = new Shell(parentShell, SWT.APPLICATION_MODAL
                 | SWT.DIALOG_TRIM);
         Label textInfo = new Label(settingsDialogShell, SWT.NONE);
@@ -56,17 +52,22 @@ public class OutputByPage {
         setNumberOfRowsOnPage.setBounds(70, 60, 80, 30);
         setNumberOfRowsOnPage.setText("Apply");
         setNumberOfRowsOnPage.addSelectionListener(widgetSelectedAdapter(event -> {
-            setDefaultPageSettings( gui.controller.getStudentsSize(), Integer.parseInt(inputRowsOnPage.getText()));
+            if (inputRowsOnPage.getText().equals("")) {
+                WindowForm.error(settingsDialogShell, "Empty row", "You did not inputed any information.");
+                return;
+            }
+            setDefaultPageSettings(gui.controller.getStudentsSize(), Integer.parseInt(inputRowsOnPage.getText()));
             pageInfo.setText("Page " + getCurrentPage() + "|" + getAmountOfPages());
             currentStudentsAmount.setText("Current amount of students: " + gui.controller.getStudentsSize());
-            currentAmountOfRowsOnPage.setText("Current amount of rows: " +numberOfRowsOnPage);
+            currentAmountOfRowsOnPage.setText("Current amount of rows: " + numberOfRowsOnPage);
             settingsDialogShell.close();
         }
         ));
         settingsDialogShell.pack();
         settingsDialogShell.open();
     }
-    public void loadTableComponent(Shell shell){
+
+    public void loadTableComponent(Shell shell) {
         GridData gridData = new GridData();
         gridData.horizontalSpan = 2;
         gridData.horizontalAlignment = SWT.FILL;
@@ -121,10 +122,10 @@ public class OutputByPage {
         currentStudentsAmount = new Label(shell, SWT.NONE);
         currentStudentsAmount.setBounds(780, 300, 200, 20);
         currentAmountOfRowsOnPage = new Label(shell, SWT.NONE);
-        currentAmountOfRowsOnPage.setBounds(780, 320, 200, 30);        
-        currentStudentsAmount.setText("Current students amount: "+gui.controller.getStudentsSize());
-        currentAmountOfRowsOnPage.setText("Current amount of rows: " +numberOfRowsOnPage);
-      
+        currentAmountOfRowsOnPage.setBounds(780, 320, 200, 30);
+        currentStudentsAmount.setText("Current students amount: " + gui.controller.getStudentsSize());
+        currentAmountOfRowsOnPage.setText("Current amount of rows: " + numberOfRowsOnPage);
+
         goToFirstPage.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
@@ -153,7 +154,7 @@ public class OutputByPage {
         settings.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-               settingsDialog(shell);
+                settingsDialog(shell);
                 pageInfo.setText("Page " + getCurrentPage() + "|" + getAmountOfPages());
             }
         });
@@ -176,7 +177,10 @@ public class OutputByPage {
         forward.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                if (getCurrentPage()==getAmountOfPages()) {error.setText("You have reached the end of table"); return;}
+                if (getCurrentPage() == getAmountOfPages()) {
+                    error.setText("You have reached the end of table");
+                    return;
+                }
 
                 error.setText("");
                 try {
@@ -196,7 +200,7 @@ public class OutputByPage {
         String nameTranslator = "";
         int rowAmountSaverToPrint = 0;
         for (int studentNumber = start; studentNumber < end + 1; studentNumber++) {
-                               rowAmountSaverToPrint = studentNumber;
+            rowAmountSaverToPrint = studentNumber;
             gui.rows.add(new TableItem(table, SWT.BORDER));
             try {
                 for (int index = 0; index < gui.controller.getStudentsSize(studentNumber); index++) {
@@ -205,13 +209,13 @@ public class OutputByPage {
                             printToTable(gui.rows.get(rowsCounter), 0, gui.controller.getStudentData(studentNumber, index));
                             break;
                         case 1:
-                            nameTranslator += gui.controller.getStudentData(studentNumber, index+2) + " ";
+                            nameTranslator += gui.controller.getStudentData(studentNumber, index + 2) + " ";
                             break;
                         case 2:
-                            nameTranslator += gui.controller.getStudentData(studentNumber, index-1) + " ";
+                            nameTranslator += gui.controller.getStudentData(studentNumber, index - 1) + " ";
                             break;
                         case 3:
-                            nameTranslator += gui.controller.getStudentData(studentNumber, index-1) + " ";
+                            nameTranslator += gui.controller.getStudentData(studentNumber, index - 1) + " ";
                             break;
                         case 4:
                             printToTable(gui.rows.get(rowsCounter), 1, nameTranslator);
@@ -224,39 +228,11 @@ public class OutputByPage {
                     }
                 }
             } catch (IndexOutOfBoundsException ex) {
-               /*            // try{
-                end = gui.controller.getStudentsSize();
-                gui.rows.add(new TableItem(table, SWT.BORDER));
-                for (int index = indexSaverInCaseOfException; index < gui.controller.getStudentsSize(i); index++) {
-                    switch (index) {
-                        case 0:
-                            printToTable(gui.rows.get(rowsCounter), 0, gui.controller.getStudentData(i, index));
-                            break;
-                        case 1:
-                            nameTranslator += gui.controller.getStudentData(i, index+2) + " ";
-                            break;
-                        case 2:
-                            nameTranslator += gui.controller.getStudentData(i, index-1) + " ";
-                            break;
-                        case 3:
-                            nameTranslator += gui.controller.getStudentData(i, index-1) + " ";
-                            break;
-                        case 4:
-                            printToTable(gui.rows.get(rowsCounter), 1, nameTranslator);
-                            nameTranslator = "";
-                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.controller.getStudentData(i, index));
-                            break;
-                        default:
-                            printToTable(gui.rows.get(rowsCounter), index - 2, gui.controller.getStudentData(i, index));
-                            break;
-                    }
-                }*/
-               numberOfRowsOnPage=rowAmountSaverToPrint;
-             currentAmountOfRowsOnPage.setText("Current amount of rows: " +numberOfRowsOnPage);
+               // numberOfRowsOnPage = rowAmountSaverToPrint;
+                currentAmountOfRowsOnPage.setText("Current amount of rows: " + numberOfRowsOnPage);
 
-               return;
-            }        
-
+                return;
+            }
 
             rowsCounter++;
         }
@@ -348,41 +324,36 @@ public class OutputByPage {
         currentPageEnd = numberOfRowsOnPage - 1;
         currentPage = 1;
         table.removeAll();
-        try{
-                    printDataBaseToTable(table, currentPageStart, currentPageEnd);
-                                    pageInfo.setText("Page " + getCurrentPage() + "|" + getAmountOfPages());
-                    currentStudentsAmount.setText("Current amount of students: "+gui.controller.getStudentsSize());
-        }catch(IndexOutOfBoundsException ex){
+        try {
+            printDataBaseToTable(table, currentPageStart, currentPageEnd);
+            pageInfo.setText("Page " + getCurrentPage() + "|" + getAmountOfPages());
+            currentStudentsAmount.setText("Current amount of students: " + gui.controller.getStudentsSize());
+        } catch (IndexOutOfBoundsException ex) {
             numberOfRowsOnPage = gui.controller.getStudentsSize();
-        currentPageEnd = numberOfRowsOnPage - 1;
-        currentPage = 1;
-        printDataBaseToTable (table, currentPageStart, gui.controller.getStudentsSize());
-                            currentStudentsAmount.setText("Current amount of students: "+gui.controller.getStudentsSize());
-                                                                pageInfo.setText("Page " + getCurrentPage() + "|" + getAmountOfPages());
+            currentPageEnd = numberOfRowsOnPage - 1;
+            currentPage = 1;
+            printDataBaseToTable(table, currentPageStart, gui.controller.getStudentsSize());
+            currentStudentsAmount.setText("Current amount of students: " + gui.controller.getStudentsSize());
+            pageInfo.setText("Page " + getCurrentPage() + "|" + getAmountOfPages());
 
-}
-    }
-public void loadNewDataBaseToOBP(ArrayList newList){
-            gui.controller.removeDataFromBase();
-                    gui.controller.addDataBase(newList);
-}
-    public void getDataBase(ArrayList list) {
+        }
     }
 
-    public void clearDataBase() {
+    public void loadNewDataBaseToOBP(ArrayList newList) {
+        gui.controller.removeDataFromBase();
+        gui.controller.addDataBase(newList);
     }
 
     public void goToPage(Table table, int targetPage) {
         if (targetPage > currentPage) {
             currentPageStart += numberOfRowsOnPage * (targetPage - currentPage);
-            currentPageEnd += (numberOfRowsOnPage * (targetPage - currentPage));
+            currentPageEnd += numberOfRowsOnPage * (targetPage - currentPage);
             currentPage = targetPage;
             printDataBaseToTable(table, currentPageStart, currentPageEnd);
         } else {
             if (targetPage < currentPage) {
-
                 currentPageStart -= numberOfRowsOnPage * (currentPage - targetPage);
-                currentPageEnd -= (numberOfRowsOnPage * (currentPage - targetPage));
+                currentPageEnd -= numberOfRowsOnPage * (currentPage - targetPage);
                 currentPage = targetPage;
                 printDataBaseToTable(table, currentPageStart, currentPageEnd);
             }

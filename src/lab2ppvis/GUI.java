@@ -102,7 +102,6 @@ public class GUI {
         System.out.println("" + fname);
     }
 
-    
     public void loadGroupList(Combo combo, int column) {
         boolean exist = false;
 
@@ -168,7 +167,6 @@ public class GUI {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
                 boolean elementNotFound = false;
-                //table.removeAll();
                 rows.clear();
                 String targetGroup = groupsList.getText();
                 String targetName = studentName.getText();
@@ -223,9 +221,11 @@ public class GUI {
                     return;
                 }
                 for (Integer item : indexes) {
-                  //  try{
-                    controller.removeStudent(indexes.get(item));//controller.getIndexOfRowWithTarget(Integer.toString(item), 0)); ///////////?????
-               // }catch(IndexOutOfBoundsException ex){WindowForm.error(deleteItemShell, "error", "error");}
+                    //  try{
+                    int result = controller.getIndexOfRowWithTarget(Integer.toString(item), 0);
+                    if (result != -1) {
+                        controller.removeStudent(result);
+                    }
                 }
                 try {
                     obp.loadNewDataBaseToOBP(controller.getDataBase());
@@ -241,7 +241,6 @@ public class GUI {
     }
 
     public void addToTableDialog(OutputByPage obp, Shell shell) {
-        //DataBase model = new DataBase();
         ArrayList<Label> labelList = new ArrayList();
         ArrayList<Combo> comboList = new ArrayList();
         String[] numbers = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
@@ -295,13 +294,15 @@ public class GUI {
             }
             try {
                 addNewElement(studentName.getText(), studentGroup.getText(), studentSurname.getText(), studentPatronymic.getText(), comboList, dialog);
-                                    obp.loadNewDataBaseToOBP(controller.getDataBase());
-                    obp.setDefaultPageSettings(controller.getStudentsSize(), obp.getAmountOfRowsOnPage());
+                obp.loadNewDataBaseToOBP(controller.getDataBase());
+                obp.setDefaultPageSettings(controller.getStudentsSize(), obp.getAmountOfRowsOnPage());
             } catch (TransformerException | IOException | SAXException | ParserConfigurationException ex) {
                 Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
             } catch (NumberFormatException ex) {
                 WindowForm.error(shell, "Wrong data fromat", "Term value cannot be text.");
-            } catch(IndexOutOfBoundsException ex){return;}
+            } catch (IndexOutOfBoundsException ex) {
+                return;
+            }
         }
         ));
         dialog.pack();
@@ -313,7 +314,7 @@ public class GUI {
         Shell findItemShell = new Shell(parentShell, SWT.APPLICATION_MODAL
                 | SWT.DIALOG_TRIM);
         obp.loadTableComponent(findItemShell);
-         Label highLimit = new Label(findItemShell, SWT.NONE);
+        Label highLimit = new Label(findItemShell, SWT.NONE);
         highLimit.setBounds(0, 335, 80, 25);
         highLimit.setText("Hight limit: ");
         Label lowLimit = new Label(findItemShell, SWT.NONE);
@@ -341,18 +342,15 @@ public class GUI {
         comboInfo.setBounds(150, 335, 80, 30);
         comboInfo.setText("List of groups: ");
         Button findItems = new Button(findItemShell, SWT.NONE);
-        //findItems.setBounds(335, 330, 80, 30);
         findItems.setBounds(305, 300, 305, 30);
         findItems.setText("Find items");
-         loadGroupList(groupsList, 4);
+        loadGroupList(groupsList, 4);
         ArrayList<ArrayList<String>> foundedStudents = new ArrayList();
         findItems.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
                 foundedStudents.clear();
                 boolean elementNotFound = false;
-                //table.removeAll();
-               // rows.clear();
                 String targetGroup = groupsList.getText();
                 String targetName = studentName.getText();
                 ArrayList<Integer> indexes = new ArrayList();
@@ -363,7 +361,7 @@ public class GUI {
                     }
                     for (int i = 0; i < controller.getStudentsSize(); i++) {
                         if (!studentName.getText().equals("")) {
-                            targetName=studentName.getText();
+                            targetName = studentName.getText();
                             indexes.addAll(controller.getIndexesOfRowsWithTarget(targetName, downLimit.getText(), upLimit.getText(), 2, 15));
                             elementNotFound = false;
                             break;
@@ -380,7 +378,7 @@ public class GUI {
                         }
                     }
                 } else {
-                  //  targetName=.getText();
+                    //  targetName=.getText();
                     for (int i = 0; i < controller.getStudentsSize(); i++) {
                         if (controller.getStudentData(i).get(2).equals(targetName)) {
                             indexes.addAll(controller.getIndexesOfRowsWithTarget(targetName, 2));
@@ -411,7 +409,7 @@ public class GUI {
                     foundedStudents.add(controller.getStudentData(indexes.get(i)));
                 }
                 obp.loadNewDataBaseToOBP(foundedStudents);
-                obp.setDefaultPageSettings( foundedStudents.size(), obp.getAmountOfRowsOnPage());
+                obp.setDefaultPageSettings(foundedStudents.size(), obp.getAmountOfRowsOnPage());
             }
 
         });
@@ -541,7 +539,7 @@ public class GUI {
         Display display = new Display();
         Shell mainMenu = new Shell(display, SWT.SHELL_TRIM);
         obp.loadTableComponent(mainMenu);
-                Button addItem = new Button(mainMenu, SWT.NONE);
+        Button addItem = new Button(mainMenu, SWT.NONE);
         addItem.setBounds(306, 300, 305, 30);
         addItem.setText("Add item");
         Button findItem = new Button(mainMenu, SWT.NONE);
@@ -553,10 +551,10 @@ public class GUI {
         Button deleteItem = new Button(mainMenu, SWT.NONE);
         deleteItem.setBounds(305, 330, 305, 30);
         deleteItem.setText("Delete item");
-                Button saveTable = new Button(mainMenu, SWT.NONE);
+        Button saveTable = new Button(mainMenu, SWT.NONE);
         saveTable.setBounds(305, 360, 305, 30);
         saveTable.setText("Save table to file");
-              saveTable.addSelectionListener(new SelectionAdapter() {
+        saveTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
                 try {
@@ -566,7 +564,7 @@ public class GUI {
                 }
             }
         });
-             loadTable.addSelectionListener(new SelectionAdapter() {
+        loadTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
                 controller.removeDataFromBase();
@@ -578,20 +576,20 @@ public class GUI {
                 try {
                     obp.loadNewDataBaseToOBP(controller.getDataBase());
                     obp.setDefaultPageSettings(controller.getStudentsSize(), obp.getAmountOfRowsOnPage());
-                   // pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
+                    // pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
                     //urrentStudentsAmount.setText("Current amount of students: " + controller.getStudentsSize());
                 } catch (IndexOutOfBoundsException ex) {
                     //pageInfo.setText("Page " + obp.getCurrentPage() + "|" + obp.getAmountOfPages());
-                  //  error.setText("You have reached the end of table");
-                  return;
+                    //  error.setText("You have reached the end of table");
+                    return;
                 }
             }
         });
         deleteItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-               try {
-                    changeTableDialog(obp,mainMenu);
+                try {
+                    changeTableDialog(obp, mainMenu);
                 } catch (ParserConfigurationException ex) {
                     Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                 }

@@ -33,64 +33,83 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author ArtSCactus
  */
 public class Controller {
-        DataBase dataBase = new DataBase();
-public void removeDataFromBase(){
-    dataBase.removeDataFromBase();
-}
-public ArrayList getDataBase(){
-    return dataBase.getDataBase();
-}
-public void addDataBase(ArrayList incommingList){
-    dataBase.addDataBase(incommingList);
-}
-public  void setFileName(String newFileName){
-    dataBase.setFileName(newFileName);
-}
-public  String getFileName(){
-    return dataBase.getFileName();
-}
-public void removeStudent(int indexOfStudent){
-    dataBase.removeStudent(indexOfStudent);
-}
-public int getStudentsSize(){
-   return dataBase.getStudentsSize();
-}
-public int getStudentsSize(int indexOfElement){
-   return dataBase.getStudentsSize(indexOfElement);
-}
-public void addStudentData(ArrayList incomingList){
-dataBase.addStudentData(incomingList);
-}
-public String getStudentData(int studentIndex, int dataIndex){
-   return dataBase.getStudentData(studentIndex, dataIndex);
-}
-public ArrayList getStudentData(int studentIndex){
-  return dataBase.getStudentData(studentIndex);
-}
-public int getIndexOfRowWithTarget(String target){
-return dataBase.getIndexOfRowWithTarget(target);
-    }
-public int getIndexOfRowWithTarget(String target, int columnIndex){
-return dataBase.getIndexOfRowWithTarget(target, columnIndex);
-    }
-public ArrayList getIndexesOfRowsWithTarget(String target, int indexOfColumn){
-     return dataBase.getIndexesOfRowsWithTarget(target, indexOfColumn);
-    }
-public ArrayList getIndexesOfRowsWithTarget(String nameOrGroup, String downLimit, String upLimit, int firstColumn, int secondColumn){
- return dataBase.getIndexesOfRowsWithTarget(nameOrGroup, downLimit, upLimit, firstColumn, secondColumn);
-    }
-public boolean isExist(String target, int indexOfColumn){
-      return dataBase.isExist(target, indexOfColumn);
-}
-private  int counter = 0;
-private boolean debugMode=false;
 
-public  int getCounter(){
-    return counter;
-}
-public void setCounter(int i){
-    counter+=i;
-}
+    DataBase dataBase = new DataBase();
+
+    public void removeDataFromBase() {
+        dataBase.removeDataFromBase();
+    }
+
+    public ArrayList getDataBase() {
+        return dataBase.getDataBase();
+    }
+
+    public void addDataBase(ArrayList incommingList) {
+        dataBase.addDataBase(incommingList);
+    }
+
+    public void setFileName(String newFileName) {
+        dataBase.setFileName(newFileName);
+    }
+
+    public String getFileName() {
+        return dataBase.getFileName();
+    }
+
+    public void removeStudent(int indexOfStudent) {
+        dataBase.removeStudent(indexOfStudent);
+    }
+
+    public int getStudentsSize() {
+        return dataBase.getStudentsSize();
+    }
+
+    public int getStudentsSize(int indexOfElement) {
+        return dataBase.getStudentsSize(indexOfElement);
+    }
+
+    public void addStudentData(ArrayList incomingList) {
+        dataBase.addStudentData(incomingList);
+    }
+
+    public String getStudentData(int studentIndex, int dataIndex) {
+        return dataBase.getStudentData(studentIndex, dataIndex);
+    }
+
+    public ArrayList getStudentData(int studentIndex) {
+        return dataBase.getStudentData(studentIndex);
+    }
+
+    public int getIndexOfRowWithTarget(String target) {
+        return dataBase.getIndexOfRowWithTarget(target);
+    }
+
+    public int getIndexOfRowWithTarget(String target, int columnIndex) {
+        return dataBase.getIndexOfRowWithTarget(target, columnIndex);
+    }
+
+    public ArrayList getIndexesOfRowsWithTarget(String target, int indexOfColumn) {
+        return dataBase.getIndexesOfRowsWithTarget(target, indexOfColumn);
+    }
+
+    public ArrayList getIndexesOfRowsWithTarget(String nameOrGroup, String downLimit, String upLimit, int firstColumn, int secondColumn) {
+        return dataBase.getIndexesOfRowsWithTarget(nameOrGroup, downLimit, upLimit, firstColumn, secondColumn);
+    }
+
+    public boolean isExist(String target, int indexOfColumn) {
+        return dataBase.isExist(target, indexOfColumn);
+    }
+    private int counter = 0;
+    private boolean debugMode = false;
+
+    public int getCounter() {
+        return counter;
+    }
+
+    public void setCounter(int i) {
+        counter += i;
+    }
+
     public void writeElement(ArrayList<ArrayList<String>> students, String fileName, Shell shellForErrorWindow) throws TransformerException, IOException, SAXException, ParserConfigurationException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -100,10 +119,10 @@ public void setCounter(int i){
             Element student = document.createElement("student");
             root.appendChild(student);
             student.setAttribute("name", students.get(i).get(1));
-                        student.setAttribute("surname", students.get(i).get(2));
+            student.setAttribute("surname", students.get(i).get(2));
             student.setAttribute("patronymic", students.get(i).get(3));
             student.setAttribute("group", students.get(i).get(4));
-            
+
             for (int k = 0; k < 10; k++) {
                 Element sem = document.createElement("sem");
                 sem.appendChild(document.createTextNode(students.get(i).get(k + 5)));
@@ -120,7 +139,8 @@ public void setCounter(int i){
 
         System.out.println("Файл сохранен!");
     }
-        public void clearFile(String fileName, boolean onlyContentOfStudents) throws TransformerException, IOException, SAXException, ParserConfigurationException {
+
+    public void clearFile(String fileName, boolean onlyContentOfStudents) throws TransformerException, IOException, SAXException, ParserConfigurationException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         Document document = documentBuilder.parse(fileName);
@@ -141,7 +161,8 @@ public void setCounter(int i){
 
         transformer.transform(domSource, streamResult);
     }
-             public void createFileWithRootElement(String fileName, Shell shellForErrorWindow) throws TransformerException, ParserConfigurationException, SAXException, IOException {
+
+    public void createFileWithRootElement(String fileName, Shell shellForErrorWindow) throws TransformerException, ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         Document doc = factory.newDocumentBuilder().newDocument();
@@ -153,12 +174,12 @@ public void setCounter(int i){
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.transform(new DOMSource(doc), new StreamResult(file));
     }
-     public void loadTableFromFile(boolean debugMode, String fileLocation) {
+
+    public void loadTableFromFile(boolean debugMode, String fileLocation) {
         try {
             SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
             SAXParser saxParser = saxParserFactory.newSAXParser();
             DefaultHandler defaultHandler = new DefaultHandler() {
-                boolean studentReadingStarted = false;
                 boolean bStudent = false;
                 boolean bSem = false;
                 int tempAttrStorage = 0;
@@ -172,11 +193,10 @@ public void setCounter(int i){
                     System.out.println("Start element: " + qName);
                     if (qName.equalsIgnoreCase("student")) {
                         bStudent = true;
-                        studentReadingStarted = true;
                         String bufferName = "";
                         String bufferGroup = "";
-                        String bufferSurname="";
-                        String bufferPatronymic="";
+                        String bufferSurname = "";
+                        String bufferPatronymic = "";
 
                         newStudentData.add(Integer.toString(rowCounter));
                         int length = attributes.getLength();
@@ -184,18 +204,18 @@ public void setCounter(int i){
                             String name = attributes.getQName(i);
                             System.out.println("Attr name:" + name);
                             String value = attributes.getValue(i);
-                            switch (i){
+                            switch (i) {
                                 case (0):
-                                    bufferGroup=attributes.getValue(i);
+                                    bufferGroup = attributes.getValue(i);
                                     break;
                                 case (1):
-                                    bufferName=attributes.getValue(i);
+                                    bufferName = attributes.getValue(i);
                                     break;
                                 case (2):
-                                    bufferSurname=attributes.getValue(i);
+                                    bufferSurname = attributes.getValue(i);
                                     break;
                                 case (3):
-                                    bufferPatronymic=attributes.getValue(i);
+                                    bufferPatronymic = attributes.getValue(i);
                                     break;
                             }
                             System.out.println("Attr value:" + value + " current i=" + i);
@@ -212,9 +232,9 @@ public void setCounter(int i){
                             }
                         }
                         newStudentData.add(bufferName);
-                         newStudentData.add(bufferSurname);
-                         newStudentData.add(bufferPatronymic);
-                          newStudentData.add(bufferGroup);
+                        newStudentData.add(bufferSurname);
+                        newStudentData.add(bufferPatronymic);
+                        newStudentData.add(bufferGroup);
                     }
                     if (qName.equalsIgnoreCase("Sem")) {
                         bSem = true;
@@ -256,15 +276,14 @@ public void setCounter(int i){
                     if (bSem) {
                         System.out.println("Sem value: " + new String(ch, start, length));
                         bSem = false;
-                        newStudentData.add(new String(ch, start, length));                
+                        newStudentData.add(new String(ch, start, length));
                         columnCounter++;
                     }
                 }
             };
             saxParser.parse(dataBase.getFileName(), defaultHandler);
         } catch (IOException | ParserConfigurationException | SAXException | IllegalArgumentException ex) {
-           System.out.println(ex.getLocalizedMessage());
+            System.out.println(ex.getLocalizedMessage());
         }
     }
-    }
-
+}
