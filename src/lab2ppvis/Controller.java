@@ -27,7 +27,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-
 /**
  *
  * @author ArtSCactus
@@ -219,15 +218,10 @@ public class Controller {
                                     break;
                             }
                             System.out.println("Attr value:" + value + " current i=" + i);
-//newStudentData.add(value);
                             if (name.equals("group")) {
-//printToTable(rows.get(rowCounter), 2, value);
-//newStudentData.add(value);
                                 columnCounter = i;
                             }
                             if (name.equals("name")) {
-//printToTable(rows.get(rowCounter), 1, value);
-//newStudentData.add(value);
                                 columnCounter = i;
                             }
                         }

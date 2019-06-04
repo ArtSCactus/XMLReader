@@ -86,19 +86,27 @@ public class DataBase {
     public int getStudentsSize(int indexOfElement) {
         return students.get(indexOfElement).size();
     }
-
+/**Adds massive to main massive (students
+     * @param incomingList)*/
     public void addStudentData(ArrayList incomingList) {
         students.add(incomingList);
     }
-
+/**Get one cell from students massive in adress (studentIndex, dataIndex
+     * @param studentIndex)
+     * @param dataIndex
+     * @return */
     public String getStudentData(int studentIndex, int dataIndex) {
         return (String) students.get(studentIndex).get(dataIndex);
     }
-
+/**Returns all student data in a massive by its number
+     * @param studentIndex
+     * @return */
     public ArrayList getStudentData(int studentIndex) {
         return students.get(studentIndex);
     }
-
+/**Returns index in massive of student, that consist target. Returns -1 in case if student wasn't foun
+     * @param target
+     * @return */
     public int getIndexOfRowWithTarget(String target) {
         int indexOfRow = 0;
         boolean existence = false;
@@ -116,7 +124,10 @@ public class DataBase {
             return -1;
         }
     }
-
+/**Returns index in students massive of student, that consist target in certain collumn
+     * @param target
+     * @param columnIndex
+     * @return */
     public int getIndexOfRowWithTarget(String target, int columnIndex) {
         int indexOfRow = 0;
         boolean existence = false;
@@ -131,7 +142,10 @@ public class DataBase {
         }
         return -1;
     }
-
+/**Returns massive of students index in students massive with search by target in certain column
+     * @param target
+     * @param indexOfColumn
+     * @return */
     public ArrayList getIndexesOfRowsWithTarget(String target, int indexOfColumn) {
         ArrayList<Integer> indexesOfRows = new ArrayList();
         for (int i = 0; i < students.size(); i++) {
@@ -142,7 +156,15 @@ public class DataBase {
         }
         return indexesOfRows;
     }
-
+/**Returns massive of students index in students massive with search by name or group in a certain column
+ * with up and down limits of amount of work
+ * @param nameOrGroup
+ * @param downLimit
+ * @param upLimit
+ * @param firstColumn
+ * @param secondColumn
+ * @return 
+ */ 
     public ArrayList getIndexesOfRowsWithTarget(String nameOrGroup, String downLimit, String upLimit, int firstColumn, int secondColumn) {
         ArrayList<Integer> indexesOfRows = new ArrayList();
         for (int i = 0; i < students.size(); i++) {
@@ -152,7 +174,11 @@ public class DataBase {
         }
         return indexesOfRows;
     }
-
+/**Returns true if exists such element, that consist target in a certain column
+ * @param target
+ * @param indexOfColumn
+ * @return 
+ */
     public boolean isExist(String target, int indexOfColumn) {
         boolean existence = false;
         for (int i = 0; i < students.size(); i++) {
@@ -166,36 +192,19 @@ public class DataBase {
             return false;
         }
     }
-
-    public void outputStudents() {
-        System.out.println("--------DataBase--------");
-        for (int i = 0; i < students.size(); i++) {
-            for (int j = 0; j < students.get(i).size(); j++) {
-                if (j == 0) {
-                    System.out.println("№: " + students.get(i).get(j));
-                }
-                if (j == 1) {
-                    System.out.println("name: " + students.get(i).get(j));
-                }
-                if (j == 2) {
-                    System.out.println("group: " + students.get(i).get(j));
-                }
-                if (j > 2 & j < 13) {
-                    System.out.println("sem[" + (j) + "]: " + students.get(i).get(j));
-                }
-                if (j == 13) {
-                    System.out.println("summary work: " + students.get(i).get(j));
-                }
-            }
-        }
-    }
     private int counter = 0;
     private boolean debugMode = false;
-
+/**Returns variable counter
+ * 
+ * @return 
+ */
     public int getCounter() {
         return counter;
     }
-
+/**Summing to variable counter i
+ * 
+ * @param i 
+ */
     public void setCounter(int i) {
         counter += i;
     }
