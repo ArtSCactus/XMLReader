@@ -63,7 +63,6 @@ public class DataBase {
      * Removes student (massive of student data) by his inde
      *
      * @param indexOfStudent
-     * @param indexOfStudent
      */
     public void removeStudent(int indexOfStudent) {
         students.remove(indexOfStudent);
@@ -71,6 +70,7 @@ public class DataBase {
 
     /**
      * Returns numbers of students (number of massives) in data base
+     * @return 
      */
     public int getStudentsSize() {
         return students.size();
@@ -193,7 +193,6 @@ public class DataBase {
         }
     }
     private int counter = 0;
-    private boolean debugMode = false;
 /**Returns variable counter
  * 
  * @return 

@@ -99,7 +99,6 @@ public class Controller {
         return dataBase.isExist(target, indexOfColumn);
     }
     private int counter = 0;
-    private boolean debugMode = false;
 
     public int getCounter() {
         return counter;
@@ -108,7 +107,15 @@ public class Controller {
     public void setCounter(int i) {
         counter += i;
     }
-
+/**Writes all massive (students) into the file
+ * @param students
+ * @param fileName
+ * @param shellForErrorWindow
+ * @throws TransformerException
+ * @throws IOException
+ * @throws SAXException
+ * @throws ParserConfigurationException 
+ */
     public void writeElement(ArrayList<ArrayList<String>> students, String fileName, Shell shellForErrorWindow) throws TransformerException, IOException, SAXException, ParserConfigurationException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -138,7 +145,14 @@ public class Controller {
 
         System.out.println("Файл сохранен!");
     }
-
+/**Clear xml file. If onlyContentOfStudents true, clears only node in <students> node list
+ * @param fileName
+ * @param onlyContentOfStudents
+ * @throws TransformerException
+ * @throws IOException
+ * @throws SAXException
+ * @throws ParserConfigurationException 
+ */
     public void clearFile(String fileName, boolean onlyContentOfStudents) throws TransformerException, IOException, SAXException, ParserConfigurationException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
