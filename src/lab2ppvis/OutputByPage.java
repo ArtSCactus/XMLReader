@@ -43,6 +43,7 @@ public class OutputByPage {
     public void settingsDialog(Shell parentShell) {
         Shell settingsDialogShell = new Shell(parentShell, SWT.APPLICATION_MODAL
                 | SWT.DIALOG_TRIM);
+        settingsDialogShell.setText("Amount of rows on a page");
         Label textInfo = new Label(settingsDialogShell, SWT.NONE);
         textInfo.setBounds(15, 0, 185, 25);
         textInfo.setText("Input number of rows on the page: ");
@@ -56,7 +57,12 @@ public class OutputByPage {
                 WindowForm.error(settingsDialogShell, "Empty row", "You did not inputed any information.");
                 return;
             }
-            setDefaultPageSettings(gui.controller.getStudentsSize(), Integer.parseInt(inputRowsOnPage.getText()));
+            try {
+                setDefaultPageSettings(gui.controller.getStudentsSize(), Integer.parseInt(inputRowsOnPage.getText()));
+            } catch (NumberFormatException ex) {
+                WindowForm.error(settingsDialogShell, "Wrong data format", "Please, enter number, not a text.");
+                return;
+            }
             pageInfo.setText("Page " + getCurrentPage() + "|" + getAmountOfPages());
             currentStudentsAmount.setText("Current amount of students: " + gui.controller.getStudentsSize());
             currentAmountOfRowsOnPage.setText("Current amount of rows: " + numberOfRowsOnPage);
@@ -228,7 +234,7 @@ public class OutputByPage {
                     }
                 }
             } catch (IndexOutOfBoundsException ex) {
-               // numberOfRowsOnPage = rowAmountSaverToPrint;
+                // numberOfRowsOnPage = rowAmountSaverToPrint;
                 currentAmountOfRowsOnPage.setText("Current amount of rows: " + numberOfRowsOnPage);
 
                 return;
